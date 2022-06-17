@@ -953,10 +953,10 @@ def build_train_valid_test_data_iterators(
         train_val_test_num_samples = [train_samples,
                                       eval_iters * args.global_batch_size,
                                       test_iters * args.global_batch_size]
-        print_rank_0(' > datasets target sizes (minimum size):')
-        print_rank_0('    train:      {}'.format(train_val_test_num_samples[0]))
-        print_rank_0('    validation: {}'.format(train_val_test_num_samples[1]))
-        print_rank_0('    test:       {}'.format(train_val_test_num_samples[2]))
+        print(' > datasets target sizes (minimum size):')
+        print('    train:      {}'.format(train_val_test_num_samples[0]))
+        print('    validation: {}'.format(train_val_test_num_samples[1]))
+        print('    test:       {}'.format(train_val_test_num_samples[2]))
 
         # Build the datasets.
         train_ds, valid_ds, test_ds = build_train_valid_test_datasets_provider(
