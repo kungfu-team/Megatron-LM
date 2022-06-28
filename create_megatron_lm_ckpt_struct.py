@@ -15,10 +15,10 @@ def create_value_dict(value):
         return elements
     if isinstance(value, torch.Tensor):
         return {'tensor': list(value.size())}
-    if isinstance(value, (list, set, tuple)):
-        elements = {}
-        for i, val in enumerate(value):
-            elements[i] = create_value_dict(val)
+    if isinstance(value, (list, tuple)):
+        elements = []
+        for val in value:
+            elements.append(create_value_dict(val))
         return elements
     if isinstance(value, (int, float, str, bool)):
         return value
@@ -38,10 +38,10 @@ def create_ckpt_dict(ckpt):
 def megatron_lm():
     base_dir = "/data/marcel/training"
     size = 4
-    pp = 4
-    mp = 1
+    pp = 1
+    mp = 4
     dp = size // (pp * mp)
-    step = 10
+    step = 20
     out_dir = os.path.join(
         os.path.expanduser('~'),
         "Elasticity/Repo/transformer-checkpoint/megatron-lm")
