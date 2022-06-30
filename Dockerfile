@@ -1,4 +1,4 @@
-#!/usr/bin/env -S sh -c 'docker build --rm -t kungfu.azurecr.io/mw-megatron-lm:latest -f $0 .'
+#!/usr/bin/env -S sh -c 'docker build --rm -t kungfu.azurecr.io/mw-megatron-lm-data:latest -f $0 .'
 
 FROM nvcr.io/nvidia/pytorch:22.05-py3
 
