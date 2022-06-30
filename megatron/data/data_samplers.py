@@ -12,16 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Dataloaders."""
 
-
 import random
-import torch
+
 import numpy as np
+import torch
+from megatron import get_args, mpu
 from torch.utils.data import Dataset
-from megatron import get_args
-from megatron import mpu
 
 
 def build_pretraining_data_loader(dataset, consumed_samples):
@@ -50,7 +48,7 @@ def build_pretraining_data_loader(dataset, consumed_samples):
             data_sharding=args.data_sharding)
     else:
         raise Exception('{} dataloader type is not supported.'.format(
-                args.dataloader_type))
+            args.dataloader_type))
 
     # Torch dataloader.
     return torch.utils.data.DataLoader(dataset,
@@ -58,10 +56,16 @@ def build_pretraining_data_loader(dataset, consumed_samples):
                                        num_workers=args.num_workers,
                                        pin_memory=True)
 
+
 class MegatronPretrainingSampler:
 
-    def __init__(self, total_samples, consumed_samples, micro_batch_size,
-                 data_parallel_rank, data_parallel_size, drop_last=True):
+    def __init__(self,
+                 total_samples,
+                 consumed_samples,
+                 micro_batch_size,
+                 data_parallel_rank,
+                 data_parallel_size,
+                 drop_last=True):
         # Keep a copy of input params for later use.
         self.total_samples = total_samples
         self.consumed_samples = consumed_samples
@@ -87,8 +91,8 @@ class MegatronPretrainingSampler:
         return self.total_samples
 
     def get_start_end_idx(self):
-        start_idx = self.data_parallel_rank * self.micro_batch_size
-        end_idx = start_idx + self.micro_batch_size
+        start_idx = 0
+        end_idx = self.micro_batch_size
         return start_idx, end_idx
 
     def __iter__(self):
@@ -131,8 +135,9 @@ class RandomSeedDataset(Dataset):
 
 class MegatronPretrainingRandomSampler:
 
-    def __init__(self, dataset, total_samples, consumed_samples, micro_batch_size,
-                 data_parallel_rank, data_parallel_size, data_sharding):
+    def __init__(self, dataset, total_samples, consumed_samples,
+                 micro_batch_size, data_parallel_rank, data_parallel_size,
+                 data_sharding):
         # Keep a copy of input params for later use.
         self.dataset = dataset
         self.total_samples = total_samples
@@ -173,7 +178,7 @@ class MegatronPretrainingRandomSampler:
                            * self.micro_batch_size
             bucket_offset = current_epoch_samples // self.data_parallel_size
             start_idx = self.data_parallel_rank * bucket_size
-            
+
             g = torch.Generator()
             g.manual_seed(self.epoch)
             random_idx = torch.randperm(bucket_size, generator=g).tolist()
@@ -187,7 +192,8 @@ class MegatronPretrainingRandomSampler:
             idx_range_total = \
                 torch.randperm(full_bucket_size, generator=g).tolist()
             idx_range_active = idx_range_total[full_bucket_offset:]
-            idx_range = idx_range_active[self.data_parallel_rank::self.data_parallel_size]
+            idx_range = idx_range_active[self.data_parallel_rank::self.
+                                         data_parallel_size]
 
         batch = []
         # Last batch if not complete will be dropped.
