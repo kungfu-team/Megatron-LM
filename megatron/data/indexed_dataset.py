@@ -51,9 +51,7 @@ def infer_dataset_impl(path):
 
 def make_builder(out_file, impl, vocab_size=None):
     if impl == 'mmap':
-        #  return MMapIndexedDatasetBuilder(
-        #      out_file, dtype=__best_fitting_dtype(vocab_size))
-        return MMapIndexedDatasetBuilderNP(
+        return MMapIndexedDatasetBuilder(
             out_file, dtype=__best_fitting_dtype(vocab_size))
     else:
         return IndexedDatasetBuilder(out_file)
