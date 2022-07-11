@@ -16,6 +16,7 @@
 
 import glob
 import os
+import re
 
 import numpy as np
 import torch
@@ -114,7 +115,7 @@ class BertDatasetBatchFile(torch.utils.data.Dataset):
 
         self.samples_per_file = samples_per_file
         dir_path = os.path.dirname(data_prefix)
-        self.batch_files = glob.glob(dir_path + '/*')
+        self.batch_files = glob.glob(dir_path + '/batch*')
         self.batch_files.sort()
 
         self.dp_degree = mpu.get_data_parallel_world_size()
@@ -125,8 +126,20 @@ class BertDatasetBatchFile(torch.utils.data.Dataset):
 
         self.loaded_files = {}
 
+        last_file = self.batch_files[-1]
+        file_name = os.path.basename(last_file)
+        mat = re.match(r'batch_(\d+).npz', file_name)
+        if mat is not None:
+            batch_num = int(mat.group(1))
+        else:
+            raise ValueError('match is None')
+        self.num_samples = samples_per_file * batch_num
+        last_samples = np.load(last_file)
+        last_batch_num_samples = last_samples['text'].shape[0]
+        self.num_samples = self.num_samples + last_batch_num_samples
+
     def __len__(self):
-        return len(self.batch_files)
+        return self.num_samples
 
     def __getitem__(self, idx):
         if self.do_shard:

@@ -504,7 +504,8 @@ def _build_train_valid_test_datasets(data_prefix,
         raise ValueError("Invalid dataset_type: ", dataset_type)
 
     # Indexed dataset.
-    indexed_dataset = get_indexed_dataset_(data_prefix, data_impl, skip_warmup)
+    #  indexed_dataset = get_indexed_dataset_(data_prefix, data_impl, skip_warmup)
+    indexed_dataset = None
 
     if dataset_type == DSET_TYPE_ICT:
         args = get_args()
@@ -514,7 +515,8 @@ def _build_train_valid_test_datasets(data_prefix,
     # Get start and end indices of train/valid/train into doc-idx
     # Note that doc-idx is desinged to be num-docs + 1 so we can
     # easily iterate over it.
-    total_num_of_documents = indexed_dataset.doc_idx.shape[0] - 1
+    #  total_num_of_documents = indexed_dataset.doc_idx.shape[0] - 1
+    total_num_of_documents = 15722811
     splits = get_train_valid_test_split_(splits_string, total_num_of_documents)
 
     # Print stats about the splits.
@@ -531,9 +533,9 @@ def _build_train_valid_test_datasets(data_prefix,
                      'sentences'.format(start_index, end_index,
                                         end_index - start_index))
 
-    print_split_stats('train', 0)
-    print_split_stats('validation', 1)
-    print_split_stats('test', 2)
+    #  print_split_stats('train', 0)
+    #  print_split_stats('validation', 1)
+    #  print_split_stats('test', 2)
 
     def build_dataset(index, name):
         from megatron.data.bert_dataset import (BertDataset,
@@ -543,13 +545,13 @@ def _build_train_valid_test_datasets(data_prefix,
         dataset = None
         if splits[index + 1] > splits[index]:
             # Get the pointer to the original doc-idx so we can set it later.
-            doc_idx_ptr = indexed_dataset.get_doc_idx()
+            #  doc_idx_ptr = indexed_dataset.get_doc_idx()
             # Slice the doc-idx
             start_index = splits[index]
             # Add +1 so we can index into the dataset to get the upper bound.
             end_index = splits[index + 1] + 1
             # New doc_idx view.
-            indexed_dataset.set_doc_idx(doc_idx_ptr[start_index:end_index])
+            #  indexed_dataset.set_doc_idx(doc_idx_ptr[start_index:end_index])
             # Build the dataset accordingly.
             kwargs = dict(
                 name=name,
@@ -593,11 +595,11 @@ def _build_train_valid_test_datasets(data_prefix,
                     "Dataset type not fully implemented.")
 
             # Set the original pointer so dataset remains the main dataset.
-            indexed_dataset.set_doc_idx(doc_idx_ptr)
+            #  indexed_dataset.set_doc_idx(doc_idx_ptr)
             # Checks.
-            assert indexed_dataset.doc_idx[0] == 0
-            assert indexed_dataset.doc_idx.shape[0] == \
-                (total_num_of_documents + 1)
+            #  assert indexed_dataset.doc_idx[0] == 0
+            #  assert indexed_dataset.doc_idx.shape[0] == \
+            #      (total_num_of_documents + 1)
         return dataset
 
     train_dataset = build_dataset(0, 'train')

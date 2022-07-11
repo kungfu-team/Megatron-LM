@@ -53,7 +53,7 @@ def load_samples(ds, num):
 #      'truncated': int(truncated)}
 def save_batches(ds, num_samples=16384):
     samples = []
-    batch_num = 0
+    shard_num = 0
     for i, sample in enumerate(ds):
         if i > 0 and i % num_samples == 0:
             # save
@@ -66,10 +66,10 @@ def save_batches(ds, num_samples=16384):
                                            for x in samples])
             truncated = np.concatenate([[x['truncated']] for x in samples])
 
-            print(f'save batch {batch_num}')
+            print(f'save batch {shard_num}')
 
             path = '/data/megatron-lm/bert/large'
-            path = os.path.join(path, 'batch_{batch_num:09d}.npz')
+            path = os.path.join(path, f'samples_{shard_num:09d}.npz')
             np.savez(path,
                      text=text,
                      types=types,
@@ -79,7 +79,7 @@ def save_batches(ds, num_samples=16384):
                      padding_mask=padding_mask,
                      truncated=truncated)
 
-            batch_num = batch_num + 1
+            shard_num = shard_num + 1
             samples = []
 
         samples.append(sample)

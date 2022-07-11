@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Pretrain BERT"""
 
 from functools import partial
@@ -20,10 +19,7 @@ from functools import partial
 import torch
 import torch.nn.functional as F
 
-from megatron import get_args
-from megatron import print_rank_0
-from megatron import get_timers
-from megatron import mpu
+from megatron import get_args, get_timers, mpu, print_rank_0
 from megatron.data.dataset_utils import build_train_valid_test_datasets
 from megatron.model import BertModel, ModelType
 from megatron.training import pretrain
@@ -37,12 +33,11 @@ def model_provider(pre_process=True, post_process=True):
 
     args = get_args()
     num_tokentypes = 2 if args.bert_binary_head else 0
-    model = BertModel(
-        num_tokentypes=num_tokentypes,
-        add_binary_head=args.bert_binary_head,
-        parallel_output=True,
-        pre_process=pre_process,
-        post_process=post_process)
+    model = BertModel(num_tokentypes=num_tokentypes,
+                      add_binary_head=args.bert_binary_head,
+                      parallel_output=True,
+                      pre_process=pre_process,
+                      post_process=post_process)
 
     return model
 
@@ -51,7 +46,9 @@ def get_batch(data_iterator):
     """Build the batch."""
 
     # Items and their type.
-    keys = ['text', 'types', 'labels', 'is_random', 'loss_mask', 'padding_mask']
+    keys = [
+        'text', 'types', 'labels', 'is_random', 'loss_mask', 'padding_mask'
+    ]
     datatype = torch.int64
 
     # Broadcast data.
@@ -60,6 +57,8 @@ def get_batch(data_iterator):
     else:
         data = None
     data_b = mpu.broadcast_data(keys, data, datatype)
+
+    print(f'data_b {data_b}')
 
     # Unpack.
     tokens = data_b['text'].long()
@@ -88,13 +87,14 @@ def loss_func(loss_mask, sentence_order, output_tensor):
         loss = lm_loss + sop_loss
         averaged_losses = average_losses_across_data_parallel_group(
             [lm_loss, sop_loss])
-        return loss, {'lm loss': averaged_losses[0],
-                      'sop loss': averaged_losses[1]}
+        return loss, {
+            'lm loss': averaged_losses[0],
+            'sop loss': averaged_losses[1]
+        }
 
     else:
         loss = lm_loss
-        averaged_losses = average_losses_across_data_parallel_group(
-            [lm_loss])
+        averaged_losses = average_losses_across_data_parallel_group([lm_loss])
         return loss, {'lm loss': averaged_losses[0]}
 
 
@@ -113,7 +113,9 @@ def forward_step(data_iterator, model):
         types = None
 
     # Forward pass through the model.
-    output_tensor = model(tokens, padding_mask, tokentype_ids=types,
+    output_tensor = model(tokens,
+                          padding_mask,
+                          tokentype_ids=types,
                           lm_labels=lm_labels)
 
     return output_tensor, partial(loss_func, loss_mask, sentence_order)
@@ -143,6 +145,8 @@ def train_valid_test_datasets_provider(train_val_test_num_samples):
 
 if __name__ == "__main__":
 
-    pretrain(train_valid_test_datasets_provider, model_provider,
+    pretrain(train_valid_test_datasets_provider,
+             model_provider,
              ModelType.encoder_or_decoder,
-             forward_step, args_defaults={'tokenizer_type': 'BertWordPieceLowerCase'})
+             forward_step,
+             args_defaults={'tokenizer_type': 'BertWordPieceLowerCase'})
