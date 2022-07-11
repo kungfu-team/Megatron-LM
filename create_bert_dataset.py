@@ -51,11 +51,11 @@ def load_samples(ds, num):
 #      'loss_mask': loss_mask_np,
 #      'padding_mask': padding_mask_np,
 #      'truncated': int(truncated)}
-def save_batches(ds, device_batch_size=16):
+def save_batches(ds, num_samples=16384):
     samples = []
     batch_num = 0
     for i, sample in enumerate(ds):
-        if i > 0 and i % device_batch_size == 0:
+        if i > 0 and i % num_samples == 0:
             # save
             text = np.concatenate([[x['text']] for x in samples])
             types = np.concatenate([[x['types']] for x in samples])
@@ -68,9 +68,8 @@ def save_batches(ds, device_batch_size=16):
 
             print(f'save batch {batch_num}')
 
-            rank = 0 if batch_num % 2 == 0 else 1
-            path = '/data/megatron-lm/bert/shard_2'
-            path = os.path.join(path, f'{rank}/batch_{batch_num:09d}.npz')
+            path = '/data/megatron-lm/bert/large'
+            path = os.path.join(path, 'batch_{batch_num:09d}.npz')
             np.savez(path,
                      text=text,
                      types=types,

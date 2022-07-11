@@ -536,7 +536,8 @@ def _build_train_valid_test_datasets(data_prefix,
     print_split_stats('test', 2)
 
     def build_dataset(index, name):
-        from megatron.data.bert_dataset import BertDataset
+        from megatron.data.bert_dataset import (BertDataset,
+                                                BertDatasetBatchFile)
         from megatron.data.ict_dataset import ICTDataset
         from megatron.data.t5_dataset import T5Dataset
         dataset = None
@@ -575,11 +576,18 @@ def _build_train_valid_test_datasets(data_prefix,
                                     short_seq_prob=short_seq_prob,
                                     **kwargs)
             elif dataset_type == DSET_TYPE_BERT:
-                dataset = BertDataset(indexed_dataset=indexed_dataset,
-                                      masked_lm_prob=masked_lm_prob,
-                                      short_seq_prob=short_seq_prob,
-                                      binary_head=binary_head,
-                                      **kwargs)
+                dataset = BertDatasetBatchFile(indexed_dataset=indexed_dataset,
+                                               masked_lm_prob=masked_lm_prob,
+                                               short_seq_prob=short_seq_prob,
+                                               binary_head=binary_head,
+                                               samples_per_file=16,
+                                               batch_size=32,
+                                               **kwargs)
+                #  dataset = BertDataset(indexed_dataset=indexed_dataset,
+                #                        masked_lm_prob=masked_lm_prob,
+                #                        short_seq_prob=short_seq_prob,
+                #                        binary_head=binary_head,
+                #                        **kwargs)
             else:
                 raise NotImplementedError(
                     "Dataset type not fully implemented.")
