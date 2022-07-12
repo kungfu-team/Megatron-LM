@@ -115,7 +115,7 @@ class BertDatasetBatchFile(torch.utils.data.Dataset):
 
         self.samples_per_file = samples_per_file
         dir_path = os.path.dirname(data_prefix)
-        self.batch_files = glob.glob(dir_path + '/batch*')
+        self.batch_files = glob.glob(dir_path + '/samples*')
         self.batch_files.sort()
 
         self.dp_degree = mpu.get_data_parallel_world_size()
@@ -127,7 +127,7 @@ class BertDatasetBatchFile(torch.utils.data.Dataset):
 
         last_file = self.batch_files[-1]
         file_name = os.path.basename(last_file)
-        mat = re.match(r'batch_(\d+).npz', file_name)
+        mat = re.match(r'samples_(\d+).npz', file_name)
         if mat is not None:
             batch_num = int(mat.group(1))
         else:
