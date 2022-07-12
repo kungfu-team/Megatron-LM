@@ -582,7 +582,7 @@ def _build_train_valid_test_datasets(data_prefix,
                                                masked_lm_prob=masked_lm_prob,
                                                short_seq_prob=short_seq_prob,
                                                binary_head=binary_head,
-                                               samples_per_file=16,
+                                               samples_per_file=16384,
                                                batch_size=32,
                                                **kwargs)
                 #  dataset = BertDataset(indexed_dataset=indexed_dataset,
