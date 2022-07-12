@@ -58,8 +58,6 @@ def get_batch(data_iterator):
         data = None
     data_b = mpu.broadcast_data(keys, data, datatype)
 
-    print(f'data_b {data_b}')
-
     # Unpack.
     tokens = data_b['text'].long()
     types = data_b['types'].long()

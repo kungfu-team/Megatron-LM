@@ -120,9 +120,8 @@ class BertDatasetBatchFile(torch.utils.data.Dataset):
 
         self.dp_degree = mpu.get_data_parallel_world_size()
         self.do_shard = self.dp_degree > 1
-        if self.do_shard:
-            self.dp_rank = mpu.get_data_parallel_rank()
-            self.device_batch_size = batch_size // self.dp_degree
+        self.dp_rank = mpu.get_data_parallel_rank()
+        self.device_batch_size = batch_size // self.dp_degree
 
         self.loaded_files = {}
 
@@ -144,7 +143,8 @@ class BertDatasetBatchFile(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         if self.do_shard:
             batch = idx // self.device_batch_size
-            device_batch = (self.dp_degree + self.dp_rank) * batch
+            device_batch = (self.dp_degree * batch +
+                            self.dp_rank) * self.device_batch_size
             device_batch = device_batch + idx % self.device_batch_size
             idx = device_batch
 
