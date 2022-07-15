@@ -1,14 +1,9 @@
 import glob
+import math
 import os
 from typing import Dict
 
 import numpy as np
-import torch
-
-from megatron import mpu
-from megatron.data.dataset_utils import (build_train_valid_test_datasets,
-                                         compile_helper)
-from megatron.global_vars import _build_tokenizer
 
 
 def save_shard(samples: dict, dp_rank: int, out_dir: str,
@@ -17,7 +12,7 @@ def save_shard(samples: dict, dp_rank: int, out_dir: str,
     if total_num_samples == 0:
         return
 
-    num_shards = total_num_samples // samples_per_shard
+    num_shards = math.ceil(total_num_samples / samples_per_shard)
     for shard_idx in range(num_shards):
         start_idx = shard_idx * samples_per_shard
         end_idx = start_idx + samples_per_shard
@@ -49,6 +44,7 @@ def shard_dataset(ds_dir: str, batch_size: int, dp_size: int, out_dir: str,
         samples[dp_rank] = {}
 
     sample_files = glob.glob(os.path.join(ds_dir, 'samples_*'))
+    sample_files.sort()
 
     for i, sample_file in enumerate(sample_files):
         sample_shard = np.load(sample_file)
@@ -77,7 +73,7 @@ def shard_dataset(ds_dir: str, batch_size: int, dp_size: int, out_dir: str,
 
 def main():
     batch_size = 32
-    dp_size = 2
+    dp_size = 4
     seq_len = 512
     samples_per_shard = 16384
     full_ds_dir = f'/data/megatron-lm/bert/large_{seq_len}'

@@ -90,7 +90,7 @@ class BertDataset(torch.utils.data.Dataset):
             self.binary_head)
 
 
-class BertDatasetBatchFile(torch.utils.data.Dataset):
+class BertDatasetNPZFile(torch.utils.data.Dataset):
 
     def __init__(self,
                  name,
@@ -118,11 +118,6 @@ class BertDatasetBatchFile(torch.utils.data.Dataset):
         self.batch_files = glob.glob(dir_path + '/samples*')
         self.batch_files.sort()
 
-        self.dp_degree = mpu.get_data_parallel_world_size()
-        self.do_shard = self.dp_degree > 1
-        self.dp_rank = mpu.get_data_parallel_rank()
-        self.device_batch_size = batch_size // self.dp_degree
-
         self.loaded_files = {}
 
         last_file = self.batch_files[-1]
@@ -141,13 +136,6 @@ class BertDatasetBatchFile(torch.utils.data.Dataset):
         return self.num_samples
 
     def __getitem__(self, idx):
-        if self.do_shard:
-            batch = idx // self.device_batch_size
-            device_batch = (self.dp_degree * batch +
-                            self.dp_rank) * self.device_batch_size
-            device_batch = device_batch + idx % self.device_batch_size
-            idx = device_batch
-
         sample_idx = idx % self.samples_per_file
         file_idx = idx // self.samples_per_file
 
