@@ -161,19 +161,9 @@ class BertDatasetNPZFile(torch.utils.data.Dataset):
 
 class BertDatasetOneFile(torch.utils.data.Dataset):
 
-    def __init__(self,
-                 name,
-                 indexed_dataset,
-                 data_prefix,
-                 num_epochs,
-                 max_num_samples,
-                 masked_lm_prob,
-                 max_seq_length,
-                 short_seq_prob,
-                 seed,
-                 binary_head,
-                 samples_per_file=16384,
-                 batch_size=32):
+    def __init__(self, name, indexed_dataset, data_prefix, num_epochs,
+                 max_num_samples, masked_lm_prob, max_seq_length,
+                 short_seq_prob, seed, binary_head):
 
         # Params to store.
         self.name = name
@@ -182,15 +172,14 @@ class BertDatasetOneFile(torch.utils.data.Dataset):
         self.max_seq_length = max_seq_length
         self.binary_head = binary_head
 
-        self.samples_per_file = samples_per_file
         dir_path = os.path.dirname(data_prefix)
-        self.npzs_path = os.path.join(dir_path, 'samples.npzs')
-        self.indices_path = os.path.join(dir_path, 'indices.txt')
+        dp_rank = mpu.get_data_parallel_rank()
+        rank_path = os.path.join(dir_path, str(dp_rank))
+        self.npzs_path = os.path.join(rank_path, 'samples.npzs')
+        self.indices_path = os.path.join(rank_path, 'indices.txt')
         with open(self.indices_path, "r") as indices_file:
             lines = indices_file.readlines()
         self.indices = [int(line) for line in lines]
-
-        self.loaded_files = {}
 
     def __len__(self):
         return self.indices[-1]
@@ -202,10 +191,22 @@ class BertDatasetOneFile(torch.utils.data.Dataset):
             npz_sample = npzs_file.read(size)
 
         buf = io.BytesIO(npz_sample)
+        print(f'BertDatasetOneFile buffer length {len(buf.getvalue())}')
         sample = np.load(buf)
+
+        train_sample = {
+            'text': sample['text'],
+            'types': sample['types'],
+            'labels': sample['labels'],
+            'is_random': sample['is_random'],
+            'loss_mask': sample['loss_mask'],
+            'padding_mask': sample['padding_mask'],
+            'truncated': sample['truncated']
+        }
+
         buf.close()
 
-        return sample
+        return train_sample
 
 
 def build_training_sample(sample, target_seq_length, max_seq_length,
