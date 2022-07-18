@@ -191,7 +191,6 @@ class BertDatasetOneFile(torch.utils.data.Dataset):
             npz_sample = npzs_file.read(size)
 
         buf = io.BytesIO(npz_sample)
-        print(f'BertDatasetOneFile buffer length {len(buf.getvalue())}')
         sample = np.load(buf)
 
         train_sample = {
