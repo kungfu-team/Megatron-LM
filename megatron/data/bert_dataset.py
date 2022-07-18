@@ -15,6 +15,7 @@
 """BERT Style dataset."""
 
 import glob
+import io
 import os
 import re
 
@@ -156,6 +157,55 @@ class BertDatasetNPZFile(torch.utils.data.Dataset):
         }
 
         return train_sample
+
+
+class BertDatasetOneFile(torch.utils.data.Dataset):
+
+    def __init__(self,
+                 name,
+                 indexed_dataset,
+                 data_prefix,
+                 num_epochs,
+                 max_num_samples,
+                 masked_lm_prob,
+                 max_seq_length,
+                 short_seq_prob,
+                 seed,
+                 binary_head,
+                 samples_per_file=16384,
+                 batch_size=32):
+
+        # Params to store.
+        self.name = name
+        self.seed = seed
+        self.masked_lm_prob = masked_lm_prob
+        self.max_seq_length = max_seq_length
+        self.binary_head = binary_head
+
+        self.samples_per_file = samples_per_file
+        dir_path = os.path.dirname(data_prefix)
+        self.npzs_path = os.path.join(dir_path, 'samples.npzs')
+        self.indices_path = os.path.join(dir_path, 'indices.txt')
+        with open(self.indices_path, "r") as indices_file:
+            lines = indices_file.readlines()
+        self.indices = [int(line) for line in lines]
+
+        self.loaded_files = {}
+
+    def __len__(self):
+        return self.indices[-1]
+
+    def __getitem__(self, idx):
+        size = self.indices[idx + 1] - self.indices[idx]
+        with open(self.npzs_path, 'rb') as npzs_file:
+            npzs_file.seek(self.indices[idx])
+            npz_sample = npzs_file.read(size)
+
+        buf = io.BytesIO(npz_sample)
+        sample = np.load(buf)
+        buf.close()
+
+        return sample
 
 
 def build_training_sample(sample, target_seq_length, max_seq_length,
