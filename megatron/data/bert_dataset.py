@@ -172,7 +172,10 @@ class BertDatasetOneFile(torch.utils.data.Dataset):
         self.max_seq_length = max_seq_length
         self.binary_head = binary_head
 
-        self.mlfs_path = '/data/mlfs'
+        args = get_args()
+
+        #  self.mlfs_path = '/data/marcel/mlfs'
+        self.mlfs_path = args.mlfs_path
 
         with open(os.path.join(self.mlfs_path, 'job/0/head.txt'),
                   'r') as head_file:
@@ -182,14 +185,14 @@ class BertDatasetOneFile(torch.utils.data.Dataset):
             rank_paths = progress_file.readlines()
 
         dp_rank = mpu.get_data_parallel_rank()
-        rank_path = rank_paths[dp_rank]
+        rank_path = rank_paths[dp_rank].strip()
 
         with open(self.mlfs_path + os.path.join(rank_path, 'list.txt'),
                   'r') as list_file:
             data_file_paths = list_file.readlines()
 
         # TMP
-        data_file_path = data_file_paths[0]
+        data_file_path = data_file_paths[0].strip()
 
         self.npzs_path = self.mlfs_path + data_file_path
 
