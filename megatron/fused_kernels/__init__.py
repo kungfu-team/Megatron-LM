@@ -72,24 +72,32 @@ def load(args):
             srcpath / 'scaled_upper_triang_masked_softmax.cpp',
             srcpath / 'scaled_upper_triang_masked_softmax_cuda.cu'
         ]
-        scaled_upper_triang_masked_softmax_cuda = _cpp_extention_load_helper(
-            "scaled_upper_triang_masked_softmax_cuda", sources,
-            extra_cuda_flags)
+        name = "scaled_upper_triang_masked_softmax_cuda"
+        if os.path.exists(buildpath / f'{name}.so'):
+            cpp_extension._import_module_from_library(name, buildpath, True)
+        else:
+            _cpp_extention_load_helper(name, sources, extra_cuda_flags)
 
         # Masked softmax.
         sources = [
             srcpath / 'scaled_masked_softmax.cpp',
             srcpath / 'scaled_masked_softmax_cuda.cu'
         ]
-        scaled_masked_softmax_cuda = _cpp_extention_load_helper(
-            "scaled_masked_softmax_cuda", sources, extra_cuda_flags)
+        name = "scaled_masked_softmax_cuda"
+        if os.path.exists(buildpath / f'{name}.so'):
+            cpp_extension._import_module_from_library(name, buildpath, True)
+        else:
+            _cpp_extention_load_helper(name, sources, extra_cuda_flags)
 
         # Softmax
         sources = [
             srcpath / 'scaled_softmax.cpp', srcpath / 'scaled_softmax_cuda.cu'
         ]
-        scaled_softmax_cuda = _cpp_extention_load_helper(
-            "scaled_softmax_cuda", sources, extra_cuda_flags)
+        name = "scaled_softmax_cuda"
+        if os.path.exists(buildpath / f'{name}.so'):
+            cpp_extension._import_module_from_library(name, buildpath, True)
+        else:
+            _cpp_extention_load_helper(name, sources, extra_cuda_flags)
 
     # =================================
     # Mixed precision fused layer norm.
@@ -99,8 +107,11 @@ def load(args):
     sources = [
         srcpath / 'layer_norm_cuda.cpp', srcpath / 'layer_norm_cuda_kernel.cu'
     ]
-    fused_mix_prec_layer_norm_cuda = _cpp_extention_load_helper(
-        "fused_mix_prec_layer_norm_cuda", sources, extra_cuda_flags)
+    name = "fused_mix_prec_layer_norm_cuda"
+    if os.path.exists(buildpath / f'{name}.so'):
+        cpp_extension._import_module_from_library(name, buildpath, True)
+    else:
+        _cpp_extention_load_helper(name, sources, extra_cuda_flags)
 
     # =================================
     # Fused gradient accumulation to weight gradient computation of linear layer
@@ -111,8 +122,11 @@ def load(args):
             srcpath / 'fused_weight_gradient_dense.cpp',
             srcpath / 'fused_weight_gradient_dense.cu'
         ]
-        fused_dense_cuda = _cpp_extention_load_helper("fused_dense_cuda",
-                                                      sources, [])
+        name = "fused_dense_cuda"
+        if os.path.exists(buildpath / f'{name}.so'):
+            cpp_extension._import_module_from_library(name, buildpath, True)
+        else:
+            _cpp_extention_load_helper(name, sources, [])
 
 
 def _get_cuda_bare_metal_version(cuda_dir):
