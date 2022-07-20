@@ -172,22 +172,46 @@ class BertDatasetOneFile(torch.utils.data.Dataset):
         self.max_seq_length = max_seq_length
         self.binary_head = binary_head
 
-        dir_path = os.path.dirname(data_prefix)
+        self.mlfs_path = '/data/mlfs'
+
+        with open(os.path.join(self.mlfs_path, 'job/0/head.txt'),
+                  'r') as head_file:
+            progress_path = head_file.read().strip()
+
+        with open(self.mlfs_path + progress_path, 'r') as progress_file:
+            rank_paths = progress_file.readlines()
+
         dp_rank = mpu.get_data_parallel_rank()
-        rank_path = os.path.join(dir_path, str(dp_rank))
-        self.npzs_path = os.path.join(rank_path, 'samples.npzs')
-        self.indices_path = os.path.join(rank_path, 'indices.txt')
+        rank_path = rank_paths[dp_rank]
+
+        with open(self.mlfs_path + os.path.join(rank_path, 'list.txt'),
+                  'r') as list_file:
+            data_file_paths = list_file.readlines()
+
+        # TMP
+        data_file_path = data_file_paths[0]
+
+        self.npzs_path = self.mlfs_path + data_file_path
+
+        self.indices_path = f'{self.npzs_path}.idx'
         with open(self.indices_path, "r") as indices_file:
             lines = indices_file.readlines()
-        self.indices = [int(line) for line in lines]
+
+        #TMP
+        lines = lines[2:]
+
+        self.indices = []
+        for line in lines:
+            splitted = line.split(' ')
+            self.indices.append((int(splitted[0]), int(splitted[1])))
 
     def __len__(self):
-        return self.indices[-1]
+        return self.indices[-1][1]
 
     def __getitem__(self, idx):
-        size = self.indices[idx + 1] - self.indices[idx]
+        size = self.indices[idx][1] - self.indices[idx][0]
         with open(self.npzs_path, 'rb') as npzs_file:
-            npzs_file.seek(self.indices[idx])
+            npzs_file.seek(self.indices[idx][0])
             npz_sample = npzs_file.read(size)
 
         buf = io.BytesIO(npz_sample)
