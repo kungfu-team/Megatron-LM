@@ -12,31 +12,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Megatron initialization."""
 
-import random
 import os
+import random
 import time
+from datetime import timedelta
 
 import numpy as np
 import torch
-from datetime import timedelta
 
-from megatron import fused_kernels
-from megatron import get_adlr_autoresume
-from megatron import get_args
-from megatron import get_tensorboard_writer
-from megatron import mpu
+from megatron import (fused_kernels, get_adlr_autoresume, get_args,
+                      get_tensorboard_writer, mpu)
 from megatron.global_vars import set_global_variables
+from megatron.model.fused_bias_gelu import bias_gelu
+from megatron.model.transformer import bias_dropout_add_fused_train
 from megatron.mpu import (set_tensor_model_parallel_rank,
                           set_tensor_model_parallel_world_size)
-from megatron.model.transformer import bias_dropout_add_fused_train
-from megatron.model.fused_bias_gelu import bias_gelu
 
 
-def initialize_megatron(extra_args_provider=None, args_defaults={},
-                        ignore_unknown_args=False, allow_no_cuda=False):
+def initialize_megatron(extra_args_provider=None,
+                        args_defaults={},
+                        ignore_unknown_args=False,
+                        allow_no_cuda=False):
     """Set global variables, initialize distributed, and
     set autoresume and random seeds.
     `allow_no_cuda` should not be set unless using megatron for cpu only 
@@ -60,21 +58,21 @@ def initialize_megatron(extra_args_provider=None, args_defaults={},
         args = get_args()
         # Pytorch distributed.
         _initialize_distributed()
-        
+
         # Random seeds for reproducibility.
         if args.rank == 0:
             print('> setting random seeds to {} ...'.format(args.seed))
         _set_random_seed(args.seed, args.data_parallel_random_init)
 
     args = get_args()
-    if  args.lazy_mpu_init:
-        args.use_cpu_initialization=True
+    if args.lazy_mpu_init:
+        args.use_cpu_initialization = True
         # delayed initialization of DDP-related stuff
-        # We only set basic DDP globals    
+        # We only set basic DDP globals
         set_tensor_model_parallel_world_size(args.tensor_model_parallel_size)
         # and return function for external DDP manager
         # to call when it has DDP initialized
-        set_tensor_model_parallel_rank(args.rank)    
+        set_tensor_model_parallel_rank(args.rank)
         return finish_mpu_init
     else:
         # Megatron's MPU is the master. Complete initialization right away.
@@ -105,7 +103,8 @@ def _compile_dependencies():
         from megatron.data.dataset_utils import compile_helper
         compile_helper()
         print('>>> done with dataset index builder. Compilation time: {:.3f} '
-              'seconds'.format(time.time() - start_time), flush=True)
+              'seconds'.format(time.time() - start_time),
+              flush=True)
 
     # ==================
     # Load fused kernels
@@ -121,14 +120,15 @@ def _compile_dependencies():
     custom_kernel_constraint = seq_len > 16 and seq_len <=4096 and \
         seq_len % 4 == 0 and attn_batch_size % 4 == 0
     # Print a warning.
-    if not ((args.fp16 or args.bf16) and
-            custom_kernel_constraint and
-            args.masked_softmax_fusion):
+    if not ((args.fp16 or args.bf16) and custom_kernel_constraint
+            and args.masked_softmax_fusion):
         if args.rank == 0:
-            print('WARNING: constraints for invoking optimized'
-                  ' fused softmax kernel are not met. We default'
-                  ' back to unfused kernel invocations.', flush=True)
-    
+            print(
+                'WARNING: constraints for invoking optimized'
+                ' fused softmax kernel are not met. We default'
+                ' back to unfused kernel invocations.',
+                flush=True)
+
     # Always build on rank zero first.
     if torch.distributed.get_rank() == 0:
         start_time = time.time()
@@ -145,9 +145,9 @@ def _compile_dependencies():
     torch.distributed.barrier()
     if torch.distributed.get_rank() == 0:
         print('>>> done with compiling and loading fused kernels. '
-              'Compilation time: {:.3f} seconds'.format(
-                  time.time() - start_time), flush=True)
-
+              'Compilation time: {:.3f} seconds'.format(time.time() -
+                                                        start_time),
+              flush=True)
 
 
 def _initialize_distributed():
@@ -158,8 +158,10 @@ def _initialize_distributed():
     if torch.distributed.is_initialized():
 
         if args.rank == 0:
-            print('torch distributed is already initialized, '
-                  'skipping initialization ...', flush=True)
+            print(
+                'torch distributed is already initialized, '
+                'skipping initialization ...',
+                flush=True)
         args.rank = torch.distributed.get_rank()
         args.world_size = torch.distributed.get_world_size()
 
@@ -177,10 +179,10 @@ def _initialize_distributed():
                 args.local_rank = device
             torch.cuda.set_device(device)
     # Call the init process
-    torch.distributed.init_process_group(
-        backend=args.distributed_backend,
-        world_size=args.world_size, rank=args.rank,
-        timeout=timedelta(minutes=10))
+    torch.distributed.init_process_group(backend=args.distributed_backend,
+                                         world_size=args.world_size,
+                                         rank=args.rank,
+                                         timeout=timedelta(minutes=10))
 
     # Set the tensor model-parallel, pipeline model-parallel, and
     # data-parallel communicators.
@@ -188,10 +190,11 @@ def _initialize_distributed():
         if mpu.model_parallel_is_initialized():
             print('model parallel is already initialized')
         else:
-            mpu.initialize_model_parallel(args.tensor_model_parallel_size,
-                                          args.pipeline_model_parallel_size,
-                                          args.virtual_pipeline_model_parallel_size,
-                                          args.pipeline_model_parallel_split_rank)
+            mpu.initialize_model_parallel(
+                args.tensor_model_parallel_size,
+                args.pipeline_model_parallel_size,
+                args.virtual_pipeline_model_parallel_size,
+                args.pipeline_model_parallel_split_rank)
 
 
 def _init_autoresume():
@@ -217,7 +220,8 @@ def _set_random_seed(seed_, data_parallel_random_init=False):
         if torch.cuda.device_count() > 0:
             mpu.model_parallel_cuda_manual_seed(seed)
     else:
-        raise ValueError('Seed ({}) should be a positive integer.'.format(seed))
+        raise ValueError(
+            'Seed ({}) should be a positive integer.'.format(seed))
 
 
 def write_args_to_tensorboard():
@@ -226,7 +230,8 @@ def write_args_to_tensorboard():
     writer = get_tensorboard_writer()
     if writer:
         for arg in vars(args):
-            writer.add_text(arg, str(getattr(args, arg)),
+            writer.add_text(arg,
+                            str(getattr(args, arg)),
                             global_step=args.iteration)
 
 
@@ -266,10 +271,13 @@ def _warmup_jit_function():
 
     # Warmup fused bias+gelu
     bias = torch.rand(args.ffn_hidden_size // args.tensor_model_parallel_size,
-                      dtype=dtype, device='cuda')
-    input = torch.rand((args.seq_length, args.micro_batch_size,
-                        args.ffn_hidden_size // args.tensor_model_parallel_size),
-                       dtype=dtype, device='cuda')
+                      dtype=dtype,
+                      device='cuda')
+    input = torch.rand(
+        (args.seq_length, args.micro_batch_size,
+         args.ffn_hidden_size // args.tensor_model_parallel_size),
+        dtype=dtype,
+        device='cuda')
     # Warmup JIT fusions with the input grad_enable state of both forward
     # prop and recomputation
     for bias_grad, input_grad in zip([True, True], [False, True]):
@@ -280,22 +288,30 @@ def _warmup_jit_function():
 
     # Warmup fused bias+dropout+add
     if args.sequence_parallel:
-        seq_length = args.seq_length // mpu.get_tensor_model_parallel_world_size()
+        seq_length = args.seq_length // mpu.get_tensor_model_parallel_world_size(
+        )
     else:
         seq_length = args.seq_length
     input = torch.rand((seq_length, args.micro_batch_size, args.hidden_size),
-                       dtype=dtype, device='cuda')
-    residual = torch.rand((seq_length, args.micro_batch_size, args.hidden_size),
-                          dtype=dtype, device='cuda')
-    bias = torch.rand((args.hidden_size), dtype=dtype, device='cuda').expand_as(residual)
+                       dtype=dtype,
+                       device='cuda')
+    residual = torch.rand(
+        (seq_length, args.micro_batch_size, args.hidden_size),
+        dtype=dtype,
+        device='cuda')
+    bias = torch.rand((args.hidden_size), dtype=dtype,
+                      device='cuda').expand_as(residual)
     dropout_rate = 0.1
     # Warmup JIT fusions with the input grad_enable state of both forward
     # prop and recomputation
-    for input_grad, bias_grad, residual_grad in zip([False, True], [True, True], [True, True]):
+    for input_grad, bias_grad, residual_grad in zip([False, True],
+                                                    [True, True],
+                                                    [True, True]):
         input.requires_grad = input_grad
         bias.requires_grad = bias_grad
         residual.requires_grad = residual_grad
         for _ in range(5):
-            output = bias_dropout_add_fused_train(input, bias, residual, dropout_rate)
+            output = bias_dropout_add_fused_train(input, bias, residual,
+                                                  dropout_rate)
     del bias, input, residual, output
     torch.cuda.empty_cache()
