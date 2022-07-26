@@ -159,7 +159,7 @@ class BertDatasetNPZFile(torch.utils.data.Dataset):
         return train_sample
 
 
-class BertDatasetOneFile(torch.utils.data.Dataset):
+class BertDatasetMLFS(torch.utils.data.Dataset):
 
     def __init__(self, name, indexed_dataset, data_prefix, num_epochs,
                  max_num_samples, masked_lm_prob, max_seq_length,
@@ -189,18 +189,25 @@ class BertDatasetOneFile(torch.utils.data.Dataset):
 
         with open(self.mlfs_path + os.path.join(rank_path, 'list.txt'),
                   'r') as list_file:
-            data_file_paths = list_file.readlines()
+            self.data_file_paths = list_file.readlines()
 
-        # TMP
-        data_file_path = data_file_paths[0].strip()
+        self.offset = 0
+        self.use_index_file(0)
 
-        self.npzs_path = self.mlfs_path + data_file_path
+    def use_index_file(self, file_idx: int):
+        self.current_file_idx = file_idx
+
+        self.npzs_path = self.mlfs_path + self.data_file_paths[file_idx].strip(
+        )
 
         self.indices_path = f'{self.npzs_path}.idx'
         with open(self.indices_path, "r") as indices_file:
             lines = indices_file.readlines()
 
-        #TMP
+        line_split = lines[1].split(' ')
+        self.num_samples = int(line_split[1])
+
+        # First 2 lines are metadata
         lines = lines[2:]
 
         self.indices = []
@@ -212,9 +219,15 @@ class BertDatasetOneFile(torch.utils.data.Dataset):
         return self.indices[-1][1]
 
     def __getitem__(self, idx):
-        size = self.indices[idx][1] - self.indices[idx][0]
+        file_idx = idx - self.offset
+        if file_idx >= self.num_samples:
+            self.offset = self.offset + self.num_samples
+            self.use_index_file(self.current_file_idx + 1)
+            file_idx = idx - self.offset
+
+        size = self.indices[file_idx][1] - self.indices[file_idx][0]
         with open(self.npzs_path, 'rb') as npzs_file:
-            npzs_file.seek(self.indices[idx][0])
+            npzs_file.seek(self.indices[file_idx][0])
             npz_sample = npzs_file.read(size)
 
         buf = io.BytesIO(npz_sample)
@@ -224,10 +237,10 @@ class BertDatasetOneFile(torch.utils.data.Dataset):
             'text': sample['text'],
             'types': sample['types'],
             'labels': sample['labels'],
-            'is_random': sample['is_random'],
+            'is_random': int(sample['is_random']),
             'loss_mask': sample['loss_mask'],
             'padding_mask': sample['padding_mask'],
-            'truncated': sample['truncated']
+            'truncated': int(sample['truncated']),
         }
 
         buf.close()

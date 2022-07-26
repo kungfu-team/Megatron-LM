@@ -38,14 +38,16 @@ def create_ckpt_dict(ckpt):
 def megatron_lm():
     base_dir = "/data/marcel/training"
     size = 4
-    pp = 1
-    mp = 4
+    pp = 4
+    mp = 1
     dp = size // (pp * mp)
-    step = 20
+    step = 50
+    seq_length = 512
     out_dir = os.path.join(
         os.path.expanduser('~'),
         "Elasticity/Repo/transformer-checkpoint/megatron-lm")
-    out_dir = os.path.join(out_dir, f"pp{pp:02d}/mp{mp:02d}/dp{dp:02d}")
+    out_dir = os.path.join(
+        out_dir, f"seq_{seq_length}/pp{pp:02d}/mp{mp:02d}/dp{dp:02d}")
     os.makedirs(out_dir, exist_ok=True)
 
     for rank in range(size):
