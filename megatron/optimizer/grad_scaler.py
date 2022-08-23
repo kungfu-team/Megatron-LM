@@ -100,8 +100,6 @@ class DynamicGradScaler(MegatronGradScaler):
             if self._hysteresis_tracker <= 0:
                 self._scale = torch.max(self._scale * self.backoff_factor,
                                         self.min_scale)
-                print(
-                    f'DynamicGradScaler update scale found_inf {self._scale}')
         else:
             # If there is no nan/inf, increment the growth tracker.
             self._growth_tracker += 1
@@ -112,7 +110,6 @@ class DynamicGradScaler(MegatronGradScaler):
                 self._hysteresis_tracker = self.hysteresis
                 # and scale up the loss scale.
                 self._scale = self._scale * self.growth_factor
-                print(f'DynamicGradScaler update scale {self._scale}')
 
     def state_dict(self):
         state_dict = {}
