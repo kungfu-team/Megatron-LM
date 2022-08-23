@@ -15,17 +15,13 @@
 
 from apex.optimizers import FusedAdam as Adam
 from apex.optimizers import FusedSGD as SGD
-
 from megatron import get_args
 
 from .grad_scaler import ConstantGradScaler, DynamicGradScaler
 from .optimizer import Float16OptimizerWithFloat16Params, FP32Optimizer
 
 
-def get_param_groups(modules,
-                     no_weight_decay_cond,
-                     scale_lr_cond,
-                     lr_mult):
+def get_param_groups(modules, no_weight_decay_cond, scale_lr_cond, lr_mult):
     """creates param groups based on weight decay condition (regularized vs non regularized)
        and learning rate scale condition (args.lr vs lr_mult * args.lr)
        scale_lr_cond is used during finetuning where head of the network requires a scaled
@@ -62,15 +58,32 @@ def get_param_groups(modules,
 
     param_groups = []
     if len(wd_no_scale_lr):
-        param_groups.append({'params': wd_no_scale_lr, 'wd_mult': 1.0, 'lr_mult': 1.0})
+        param_groups.append({
+            'params': wd_no_scale_lr,
+            'wd_mult': 1.0,
+            'lr_mult': 1.0
+        })
     if len(wd_scale_lr):
-        param_groups.append({'params': wd_scale_lr, 'wd_mult': 1.0, 'lr_mult': lr_mult})
+        param_groups.append({
+            'params': wd_scale_lr,
+            'wd_mult': 1.0,
+            'lr_mult': lr_mult
+        })
     if len(no_wd_no_scale_lr):
-        param_groups.append({'params': no_wd_no_scale_lr, 'wd_mult': 0.0, 'lr_mult': 1.0})
+        param_groups.append({
+            'params': no_wd_no_scale_lr,
+            'wd_mult': 0.0,
+            'lr_mult': 1.0
+        })
     if len(no_wd_scale_lr):
-        param_groups.append({'params': no_wd_scale_lr, 'wd_mult': 0.0, 'lr_mult': lr_mult})
+        param_groups.append({
+            'params': no_wd_scale_lr,
+            'wd_mult': 0.0,
+            'lr_mult': lr_mult
+        })
 
     return param_groups
+
 
 def get_megatron_optimizer(model,
                            no_weight_decay_cond=None,
@@ -79,9 +92,7 @@ def get_megatron_optimizer(model,
     args = get_args()
 
     # Base optimizer.
-    param_groups = get_param_groups(model,
-                                    no_weight_decay_cond,
-                                    scale_lr_cond,
+    param_groups = get_param_groups(model, no_weight_decay_cond, scale_lr_cond,
                                     lr_mult)
 
     if args.optimizer == 'adam':
@@ -128,16 +139,12 @@ def get_megatron_optimizer(model,
                     hysteresis=args.hysteresis)
 
         # Megatron optimizer.
-        return Float16OptimizerWithFloat16Params(optimizer,
-                                                 args.clip_grad,
-                                                 args.log_num_zeros_in_grad,
-                                                 params_have_main_grad,
-                                                 args.use_contiguous_buffers_in_local_ddp,
-                                                 args.bf16,
-                                                 grad_scaler)
+        return Float16OptimizerWithFloat16Params(
+            optimizer, args.clip_grad, args.log_num_zeros_in_grad,
+            params_have_main_grad, args.use_contiguous_buffers_in_local_ddp,
+            args.bf16, grad_scaler)
 
     # FP32.
-    return FP32Optimizer(optimizer, args.clip_grad,
-                         args.log_num_zeros_in_grad,
+    return FP32Optimizer(optimizer, args.clip_grad, args.log_num_zeros_in_grad,
                          params_have_main_grad,
                          args.use_contiguous_buffers_in_local_ddp)

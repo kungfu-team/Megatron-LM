@@ -12,11 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Megatron grad scaler."""
 
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 import torch
 
@@ -49,7 +47,6 @@ class MegatronGradScaler(ABC):
         pass
 
 
-
 class ConstantGradScaler(MegatronGradScaler):
 
     def update(self, found_inf):
@@ -62,11 +59,9 @@ class ConstantGradScaler(MegatronGradScaler):
         pass
 
 
-
 class DynamicGradScaler(MegatronGradScaler):
 
-    def __init__(self, initial_scale, min_scale,
-                 growth_factor, backoff_factor,
+    def __init__(self, initial_scale, min_scale, growth_factor, backoff_factor,
                  growth_interval, hysteresis):
         """"Grad scaler with dynamic scale that gets adjusted
         during training."""
@@ -95,9 +90,7 @@ class DynamicGradScaler(MegatronGradScaler):
         self._growth_tracker = 0
         self._hysteresis_tracker = self.hysteresis
 
-
     def update(self, found_inf):
-
         # If we have an inf/nan, growth tracker is set to 0
         # and hysterisis tracker is reduced by 1.
         if found_inf:
@@ -107,6 +100,8 @@ class DynamicGradScaler(MegatronGradScaler):
             if self._hysteresis_tracker <= 0:
                 self._scale = torch.max(self._scale * self.backoff_factor,
                                         self.min_scale)
+                print(
+                    f'DynamicGradScaler update scale found_inf {self._scale}')
         else:
             # If there is no nan/inf, increment the growth tracker.
             self._growth_tracker += 1
@@ -117,7 +112,7 @@ class DynamicGradScaler(MegatronGradScaler):
                 self._hysteresis_tracker = self.hysteresis
                 # and scale up the loss scale.
                 self._scale = self._scale * self.growth_factor
-
+                print(f'DynamicGradScaler update scale {self._scale}')
 
     def state_dict(self):
         state_dict = {}
@@ -125,7 +120,6 @@ class DynamicGradScaler(MegatronGradScaler):
         state_dict['growth_tracker'] = self._growth_tracker
         state_dict['hysteresis_tracker'] = self._hysteresis_tracker
         return state_dict
-
 
     def load_state_dict(self, state_dict):
         self._scale = state_dict['scale'].cuda(torch.cuda.current_device())

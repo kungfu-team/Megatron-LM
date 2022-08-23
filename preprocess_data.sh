@@ -3,8 +3,8 @@
 set -e
 
 python tools/preprocess_data.py \
-	--input "/data/enwiki/json/wiki.json" \
-	--output-prefix "/data/megatron-lm/bert/bert" \
+	--input "/data/openwebtext/json/openwebtext.json" \
+	--output-prefix "/data/openwebtext/bert/bert" \
 	--vocab "/data/megatron-lm/bert/bert-large-uncased-vocab.txt" \
 	--dataset-impl mmap \
 	--tokenizer-type BertWordPieceLowerCase \
