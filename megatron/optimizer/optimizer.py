@@ -314,17 +314,19 @@ class Float16OptimizerWithFloat16Params(MegatronOptimizer):
             for j, main_param in enumerate(main_group):
                 if main_param.grad is not None:
                     main_grads.append(main_param.grad.data)
-                    is_inf = torch.any(torch.isinf(main_param.grad.data))
-                    if is_inf:
-                        print(f'group {i} param {j} is inf')
+                    # DEBUG
+                    #  is_inf = torch.any(torch.isinf(main_param.grad.data))
+                    #  if is_inf:
+                    #      print(f'group {i} param {j} is inf')
         # Append fp32 parameters.
         for i, main_group in enumerate(self.fp32_from_fp32_groups):
             for j, main_param in enumerate(main_group):
                 if main_param.grad is not None:
                     main_grads.append(main_param.grad.data)
-                    is_inf = torch.any(torch.isinf(main_param.grad.data))
-                    if is_inf:
-                        print(f'group {i} param {j} is inf')
+                    # DEBUG
+                    #  is_inf = torch.any(torch.isinf(main_param.grad.data))
+                    #  if is_inf:
+                    #      print(f'group {i} param {j} is inf')
         # Reset found inf.
         self.found_inf.fill_(0.0)
         # Unscale and set found inf/nan
