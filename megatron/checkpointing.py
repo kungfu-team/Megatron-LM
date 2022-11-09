@@ -19,6 +19,7 @@ import random
 import sys
 
 import numpy as np
+import tenplex
 import torch
 
 from megatron import (get_args, mpu, print_rank_0, update_num_microbatches,
@@ -206,9 +207,13 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
             state_dict["rng_state"] = rng_state
 
         # Save.
-        checkpoint_name = get_checkpoint_name(args.save, iteration)
-        ensure_directory_exists(checkpoint_name)
-        torch.save(state_dict, checkpoint_name)
+        #  checkpoint_name = get_checkpoint_name(args.save, iteration)
+        #  ensure_directory_exists(checkpoint_name)
+        #  torch.save(state_dict, checkpoint_name)
+
+        # Tenplex
+        device_rank = torch.distributed.get_rank()
+        tenplex.save(state_dict, iteration, device_rank)
 
     # Wait so everyone is done (necessary)
     if torch.distributed.is_initialized():
@@ -219,15 +224,15 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
             iteration, args.save))
 
     # And update the latest iteration
-    if not torch.distributed.is_initialized() or torch.distributed.get_rank(
-    ) == 0:
-        tracker_filename = get_checkpoint_tracker_filename(args.save)
-        with open(tracker_filename, 'w') as f:
-            f.write(str(iteration))
+    #  if not torch.distributed.is_initialized() or torch.distributed.get_rank(
+    #  ) == 0:
+    #      tracker_filename = get_checkpoint_tracker_filename(args.save)
+    #      with open(tracker_filename, 'w') as f:
+    #          f.write(str(iteration))
 
     # Wait so everyone is done (not necessary)
-    if torch.distributed.is_initialized():
-        torch.distributed.barrier()
+    #  if torch.distributed.is_initialized():
+    #      torch.distributed.barrier()
 
 
 def _transpose_first_dim(t, num_splits, num_splits_first, model):
@@ -324,19 +329,28 @@ def load_checkpoint(model,
     model = utils.unwrap_model(model)
 
     # Read the tracker file and set the iteration.
-    tracker_filename = get_checkpoint_tracker_filename(load_dir)
+    #  tracker_filename = get_checkpoint_tracker_filename(load_dir)
 
     # If no tracker file, return iretation zero.
-    if not os.path.isfile(tracker_filename):
-        print_rank_0('WARNING: could not find the metadata file {} '.format(
-            tracker_filename))
-        print_rank_0('    will not load any checkpoints and will start from '
-                     'random')
-        return 0
+    #  if not os.path.isfile(tracker_filename):
+    #      print_rank_0('WARNING: could not find the metadata file {} '.format(
+    #          tracker_filename))
+    #      print_rank_0('    will not load any checkpoints and will start from '
+    #                   'random')
+    #      return 0
 
     # Otherwise, read the tracker file and either set the iteration or
     # mark it as a release checkpoint.
-    iteration, release = read_metadata(tracker_filename)
+    #  iteration, release = read_metadata(tracker_filename)
+    release = False
+
+    # Tenplex
+    fname = "data/mlfs/iter"
+    if not os.path.isfile(fname):
+        print("will start from random")
+        return 0
+    device_rank = torch.distributed.get_rank()
+    state_dict, iteration = tenplex.load(device_rank)
 
     # Checkpoint.
     checkpoint_name = get_checkpoint_name(load_dir, iteration, release)
@@ -344,24 +358,24 @@ def load_checkpoint(model,
         f' loading checkpoint from {args.load} at iteration {iteration}')
 
     # Load the checkpoint.
-    try:
-        state_dict = torch.load(checkpoint_name, map_location='cpu')
-    except ModuleNotFoundError:
-        from megatron.fp16_deprecated import loss_scaler
+    #  try:
+    #      state_dict = torch.load(checkpoint_name, map_location='cpu')
+    #  except ModuleNotFoundError:
+    #      from megatron.fp16_deprecated import loss_scaler
 
-        # For backward compatibility.
-        print_rank_0(' > deserializing using the old code structure ...')
-        sys.modules['fp16.loss_scaler'] = sys.modules[
-            'megatron.fp16_deprecated.loss_scaler']
-        sys.modules['megatron.fp16.loss_scaler'] = sys.modules[
-            'megatron.fp16_deprecated.loss_scaler']
-        state_dict = torch.load(checkpoint_name, map_location='cpu')
-        sys.modules.pop('fp16.loss_scaler', None)
-        sys.modules.pop('megatron.fp16.loss_scaler', None)
-    except BaseException as e:
-        print_rank_0('could not load the checkpoint')
-        print_rank_0(e)
-        sys.exit()
+    #      # For backward compatibility.
+    #      print_rank_0(' > deserializing using the old code structure ...')
+    #      sys.modules['fp16.loss_scaler'] = sys.modules[
+    #          'megatron.fp16_deprecated.loss_scaler']
+    #      sys.modules['megatron.fp16.loss_scaler'] = sys.modules[
+    #          'megatron.fp16_deprecated.loss_scaler']
+    #      state_dict = torch.load(checkpoint_name, map_location='cpu')
+    #      sys.modules.pop('fp16.loss_scaler', None)
+    #      sys.modules.pop('megatron.fp16.loss_scaler', None)
+    #  except BaseException as e:
+    #      print_rank_0('could not load the checkpoint')
+    #      print_rank_0(e)
+    #      sys.exit()
 
     # set checkpoint version
     set_checkpoint_version(state_dict.get('checkpoint_version', 0))
