@@ -345,7 +345,7 @@ def load_checkpoint(model,
     release = False
 
     # Tenplex
-    fname = "data/mlfs/iter"
+    fname = "/data/mlfs/iter"
     if not os.path.isfile(fname):
         print("will start from random")
         return 0
@@ -381,26 +381,26 @@ def load_checkpoint(model,
     set_checkpoint_version(state_dict.get('checkpoint_version', 0))
 
     # Set iteration.
-    if args.finetune or release:
-        iteration = 0
-    else:
-        try:
-            iteration = state_dict['iteration']
-        except KeyError:
-            try:  # Backward compatible with older checkpoints
-                iteration = state_dict['total_iters']
-            except KeyError:
-                print_rank_0('A metadata file exists but unable to load '
-                             'iteration from checkpoint {}, exiting'.format(
-                                 checkpoint_name))
-                sys.exit()
+    #  if args.finetune or release:
+    #      iteration = 0
+    #  else:
+    #      try:
+    #          iteration = state_dict['iteration']
+    #      except KeyError:
+    #          try:  # Backward compatible with older checkpoints
+    #              iteration = state_dict['total_iters']
+    #          except KeyError:
+    #              print_rank_0('A metadata file exists but unable to load '
+    #                           'iteration from checkpoint {}, exiting'.format(
+    #                               checkpoint_name))
+    #              sys.exit()
 
     # Check arguments.
     assert args.consumed_train_samples == 0
     assert args.consumed_valid_samples == 0
     if 'args' in state_dict:
         checkpoint_args = state_dict['args']
-        check_checkpoint_args(checkpoint_args)
+        #  check_checkpoint_args(checkpoint_args) // ignore with Tenplex
         args.consumed_train_samples = getattr(checkpoint_args,
                                               'consumed_train_samples', 0)
         update_num_microbatches(consumed_samples=args.consumed_train_samples)
