@@ -22,6 +22,8 @@ from datetime import datetime
 # The earliest we can measure the start time.
 _TRAIN_START_TIME = time.time()
 import torch
+#  from kungfu_base import all_reduce_int_max
+#  from kungfu_base.elastic_state import ElasticContext, ElasticState
 from torch._utils import _flatten_dense_tensors, _unflatten_dense_tensors
 from torch.nn.parallel.distributed import DistributedDataParallel as torchDDP
 
@@ -738,10 +740,53 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
     # Iterations.
     iteration = args.iteration
 
+    # Tenplex
+    #  es = ElasticState(args.train_iters, full_reload=True)
+    #  progess = es._progress
+    import os
+
+    import requests
+
+    def check_stop():
+        url = os.environ["SCHEDULER_ADDRESS"]
+        url = os.path.join(url, "stop")
+        if torch.distributed.get_rank() == 0:
+            req = requests.get(url)
+            txt = req.text
+            if txt == "stop":
+                stop = torch.tensor(1,
+                                    dtype=torch.int32,
+                                    device=torch.device('cuda:0'))
+            else:
+                stop = torch.tensor(0,
+                                    dtype=torch.int32,
+                                    device=torch.device('cuda:0'))
+        else:
+            stop = torch.tensor(0,
+                                dtype=torch.int32,
+                                device=torch.device('cuda:0'))
+        torch.distributed.all_reduce(stop, op=torch.distributed.ReduceOp.MAX)
+        if stop == 1:
+            return True
+        else:
+            return False
+
     timers('interval-time').start()
     print_datetime('before the start of training step')
     report_memory_flag = True
     while iteration < args.train_iters:
+        # Tenplex
+        #  with ElasticContext(es) as should_sync:
+        #      if should_sync:
+        #          print('should_sync')
+        #          progess = all_reduce_int_max(progess)
+        #          print('sync to progesss %d' % (progess))
+        #      progess += 1
+        stop = check_stop()
+        if stop:
+            print("Tenplex STOP")
+            break
+
         update_num_microbatches(args.consumed_train_samples)
         args.curr_iteration = iteration
         loss_dict, skipped_iter, grad_norm, num_zeros_in_grad = \
