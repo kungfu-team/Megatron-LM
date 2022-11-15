@@ -177,15 +177,20 @@ class BertDatasetMLFS(torch.utils.data.Dataset):
         #  self.mlfs_path = '/data/marcel/mlfs'
         self.mlfs_path = args.mlfs_path
 
-        with open(os.path.join(self.mlfs_path, 'job/0/head.txt'),
-                  'r') as head_file:
+        with open(os.path.join(self.mlfs_path, 'head.txt'), 'r') as head_file:
             progress_path = head_file.read().strip()
+
+        # remove job and jobID
+        progress_path = re.sub(r"\/job\/[^\/]*", "", progress_path)
 
         with open(self.mlfs_path + progress_path, 'r') as progress_file:
             rank_paths = progress_file.readlines()
 
         dp_rank = mpu.get_data_parallel_rank()
         rank_path = rank_paths[dp_rank].strip()
+
+        # remove job and jobID
+        rank_path = re.sub(r"\/job\/[^\/]*", "", rank_path)
 
         with open(self.mlfs_path + os.path.join(rank_path, 'list.txt'),
                   'r') as list_file:
@@ -199,6 +204,9 @@ class BertDatasetMLFS(torch.utils.data.Dataset):
 
         self.npzs_path = self.mlfs_path + self.data_file_paths[file_idx].strip(
         )
+
+        # remove job and jobID
+        self.npzs_path = re.sub(r"\/job\/[^\/]*", "", self.npzs_path)
 
         self.indices_path = f'{self.npzs_path}.idx'
         with open(self.indices_path, "r") as indices_file:

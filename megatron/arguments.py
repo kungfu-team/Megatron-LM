@@ -985,6 +985,7 @@ def _add_data_args(parser):
     group = parser.add_argument_group(title='data and dataloader')
 
     group.add_argument('--mlfs-path', default=None)
+    group.add_argument('--jobid', default=None)
     group.add_argument('--data-path',
                        nargs='*',
                        default=None,
