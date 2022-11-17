@@ -214,7 +214,8 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
         # Tenplex
         device_rank = torch.distributed.get_rank()
         jobid = args.jobid
-        tenplex.save(state_dict, jobid, iteration, device_rank)
+        ip = args.hostip
+        tenplex.save(state_dict, jobid, iteration, device_rank, ip)
 
     # Wait so everyone is done (necessary)
     if torch.distributed.is_initialized():
