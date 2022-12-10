@@ -217,6 +217,14 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
         ip = args.hostip
         tenplex.save(state_dict, jobid, iteration, device_rank, ip)
 
+    # Tenplex
+    device_rank = torch.distributed.get_rank()
+    pp_rank = mpu.get_pipeline_model_parallel_rank()
+    mp_rank = mpu.get_tensor_model_parallel_rank()
+    dp_rank = mpu.get_data_parallel_rank()
+    print(f"Device {device_rank} has PP rank {pp_rank}," +
+          f" MP rank {mp_rank}, DP rank {dp_rank}")
+
     # Wait so everyone is done (necessary)
     if torch.distributed.is_initialized():
         torch.distributed.barrier()

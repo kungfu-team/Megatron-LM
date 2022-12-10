@@ -741,8 +741,6 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
     iteration = args.iteration
 
     # Tenplex
-    #  es = ElasticState(args.train_iters, full_reload=True)
-    #  progess = es._progress
     import os
 
     import requests
@@ -775,18 +773,6 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
     print_datetime('before the start of training step')
     report_memory_flag = True
     while iteration < args.train_iters:
-        # Tenplex
-        #  with ElasticContext(es) as should_sync:
-        #      if should_sync:
-        #          print('should_sync')
-        #          progess = all_reduce_int_max(progess)
-        #          print('sync to progesss %d' % (progess))
-        #      progess += 1
-        stop = check_stop()
-        if stop:
-            print("Tenplex STOP")
-            break
-
         update_num_microbatches(args.consumed_train_samples)
         args.curr_iteration = iteration
         loss_dict, skipped_iter, grad_norm, num_zeros_in_grad = \
