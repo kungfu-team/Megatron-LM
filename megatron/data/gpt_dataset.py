@@ -107,7 +107,11 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
         if splits[index + 1] > splits[index]:
             documents = np.arange(start=splits[index], stop=splits[index + 1],
                                   step=1, dtype=np.int32)
-            dataset = GPTDataset(name, data_prefix,
+            # dataset = GPTDataset(name, data_prefix,
+            #                       documents, indexed_dataset,
+            #                       train_valid_test_num_samples[index],
+            #                       seq_length, seed)
+            dataset = GPTDatasetMLFS(name, data_prefix,
                                   documents, indexed_dataset,
                                   train_valid_test_num_samples[index],
                                   seq_length, seed)
@@ -185,6 +189,89 @@ class GPTDataset(torch.utils.data.Dataset):
             sample = np.concatenate(sample_list)
 
         return {'text': np.array(sample, dtype=np.int64)}
+
+class GPTDatasetMLFS(torch.utils.data.Dataset):
+
+    def __init__(self, name, data_prefix, documents, indexed_dataset,
+                 num_samples, seq_length, seed):
+
+        # Params to store.
+        self.name = name
+        self.seed = seed
+
+        args = get_args()
+
+        self.mlfs_path = args.mlfs_path
+
+        with open(os.path.join(self.mlfs_path, 'head.txt'), 'r') as head_file:
+            progress_path = head_file.read().strip()
+
+        # remove job and jobID
+        progress_path = re.sub(r"\/job\/[^\/]*", "", progress_path)
+
+        with open(self.mlfs_path + progress_path, 'r') as progress_file:
+            rank_paths = progress_file.readlines()
+
+        dp_rank = mpu.get_data_parallel_rank()
+        rank_path = rank_paths[dp_rank].strip()
+
+        # remove job and jobID
+        rank_path = re.sub(r"\/job\/[^\/]*", "", rank_path)
+
+        with open(self.mlfs_path + os.path.join(rank_path, 'list.txt'),
+                  'r') as list_file:
+            self.data_file_paths = list_file.readlines()
+
+        self.offset = 0
+        self.use_index_file(0)
+
+    def use_index_file(self, file_idx: int):
+        self.current_file_idx = file_idx
+
+        self.npzs_path = self.mlfs_path + self.data_file_paths[file_idx].strip(
+        )
+
+        # remove job and jobID
+        self.npzs_path = re.sub(r"\/job\/[^\/]*", "", self.npzs_path)
+
+        self.indices_path = f'{self.npzs_path}.idx'
+        with open(self.indices_path, "r") as indices_file:
+            lines = indices_file.readlines()
+
+        line_split = lines[1].split(' ')
+        self.num_samples = int(line_split[1])
+
+        # First 2 lines are metadata
+        lines = lines[2:]
+
+        self.indices = []
+        for line in lines:
+            splitted = line.split(' ')
+            self.indices.append((int(splitted[0]), int(splitted[1])))
+
+    def __len__(self):
+        return self.indices[-1][1]
+
+    def __getitem__(self, idx):
+        file_idx = idx - self.offset
+        if file_idx >= self.num_samples:
+            self.offset = self.offset + self.num_samples
+            self.use_index_file(self.current_file_idx + 1)
+            file_idx = idx - self.offset
+
+        size = self.indices[file_idx][1] - self.indices[file_idx][0]
+        with open(self.npzs_path, 'rb') as npzs_file:
+            npzs_file.seek(self.indices[file_idx][0])
+            npz_sample = npzs_file.read(size)
+
+        buf = io.BytesIO(npz_sample)
+        sample = np.load(buf)
+
+        train_sample = {'text': sample['text']}
+
+        buf.close()
+
+        return train_sample
 
 
 def _build_index_mappings(name, data_prefix, documents, sizes,
