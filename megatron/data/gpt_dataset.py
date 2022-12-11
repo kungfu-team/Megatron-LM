@@ -17,11 +17,13 @@
 
 import os
 import time
+import re
+import io
 
 import numpy as np
 import torch
 
-from megatron import mpu, print_rank_0
+from megatron import mpu, print_rank_0, get_args
 from megatron.data.blendable_dataset import BlendableDataset
 from megatron.data.dataset_utils import get_datasets_weights_and_num_samples
 from megatron.data.dataset_utils import get_train_valid_test_split_
@@ -82,6 +84,27 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
                                      seq_length, seed, skip_warmup):
     """Build train, valid, and test datasets."""
 
+    def build_dataset(index, name):
+        dataset = None
+        if name == 'train':
+            dataset = GPTDatasetMLFS(name, data_prefix,
+                                     None, None,
+                                     train_valid_test_num_samples[index],
+                                     seq_length, seed)
+        return dataset
+
+    train_dataset = build_dataset(0, 'train')
+    valid_dataset = build_dataset(1, 'valid')
+    test_dataset = build_dataset(2, 'test')
+
+    return (train_dataset, valid_dataset, test_dataset)
+
+"""
+def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
+                                     train_valid_test_num_samples,
+                                     seq_length, seed, skip_warmup):
+    # Build train, valid, and test datasets
+
     # Indexed dataset.
     indexed_dataset = get_indexed_dataset_(data_prefix,
                                            data_impl,
@@ -107,14 +130,10 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
         if splits[index + 1] > splits[index]:
             documents = np.arange(start=splits[index], stop=splits[index + 1],
                                   step=1, dtype=np.int32)
-            # dataset = GPTDataset(name, data_prefix,
-            #                       documents, indexed_dataset,
-            #                       train_valid_test_num_samples[index],
-            #                       seq_length, seed)
-            dataset = GPTDatasetMLFS(name, data_prefix,
-                                  documents, indexed_dataset,
-                                  train_valid_test_num_samples[index],
-                                  seq_length, seed)
+            dataset = GPTDataset(name, data_prefix,
+                                 documents, indexed_dataset,
+                                 train_valid_test_num_samples[index],
+                                 seq_length, seed)
         return dataset
 
     train_dataset = build_dataset(0, 'train')
@@ -122,6 +141,7 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
     test_dataset = build_dataset(2, 'test')
 
     return (train_dataset, valid_dataset, test_dataset)
+"""
 
 
 def get_indexed_dataset_(data_prefix, data_impl, skip_warmup):
