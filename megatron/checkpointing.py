@@ -214,8 +214,11 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
         # Tenplex
         device_rank = torch.distributed.get_rank()
         jobid = args.jobid
-        ip = args.hostip
-        tenplex.save(state_dict, jobid, iteration, device_rank, ip)
+        mlfs_path = args.mlfs_path
+        ip = args.host_ip
+        port = args.mlfs_port
+        tenplex.save(state_dict, jobid, iteration, device_rank, mlfs_path, ip,
+                     port)
 
     # Tenplex
     device_rank = torch.distributed.get_rank()
@@ -360,7 +363,8 @@ def load_checkpoint(model,
         print("will start from random")
         return 0
     device_rank = torch.distributed.get_rank()
-    state_dict, iteration = tenplex.load(device_rank)
+    mlfs_path = args.mlfs_path
+    state_dict, iteration = tenplex.load(device_rank, mlfs_path)
 
     # Checkpoint.
     checkpoint_name = get_checkpoint_name(load_dir, iteration, release)
