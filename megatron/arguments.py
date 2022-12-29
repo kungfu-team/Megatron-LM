@@ -988,6 +988,7 @@ def _add_data_args(parser):
     group.add_argument('--jobid', type=str, default=None)
     group.add_argument('--host-ip', type=str, default=None)
     group.add_argument('--mlfs-port', type=int, default=None)
+    group.add_argument('--scheduler-addr', type=str, default=None)
     group.add_argument('--data-path',
                        nargs='*',
                        default=None,

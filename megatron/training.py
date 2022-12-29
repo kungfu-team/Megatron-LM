@@ -741,12 +741,19 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
     iteration = args.iteration
 
     # Tenplex
+    dp = mpu.get_data_parallel_world_size()
+    print(f"DP world size {dp}")
+    mp = mpu.get_tensor_model_parallel_world_size()
+    print(f"MP world size {mp}")
+    pp = mpu.get_pipeline_model_parallel_world_size()
+    print(f"PP world size {pp}")
+
     import os
 
     import requests
 
     def check_stop():
-        url = os.environ["SCHEDULER_ADDRESS"]
+        url = args.scheduler_addr
         url = os.path.join(url, "stop")
         if torch.distributed.get_rank() == 0:
             req = requests.get(url)
