@@ -1,4 +1,4 @@
-#!/usr/bin/env -S sh -c 'docker build --rm -t kungfu.azurecr.io/mw-megatron-lm-no-scheduler-gpt:latest -f $0 .'
+#!/usr/bin/env -S sh -c 'docker build --rm -t kungfu.azurecr.io/mw-megatron-lm-no-scheduler:latest -f $0 .'
 
 FROM kungfu.azurecr.io/mw-megatron-lm-tenplex:latest
 
