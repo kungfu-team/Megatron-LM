@@ -17,6 +17,7 @@
 import os
 import random
 import sys
+import time
 
 import numpy as np
 import tenplex
@@ -212,6 +213,8 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
         #  torch.save(state_dict, checkpoint_name)
 
         # Tenplex
+        tim = time.time()
+        print(f"save state at {tim}")
         device_rank = torch.distributed.get_rank()
         jobid = args.jobid
         mlfs_path = args.mlfs_path
@@ -365,6 +368,8 @@ def load_checkpoint(model,
     device_rank = torch.distributed.get_rank()
     mlfs_path = args.mlfs_path
     state_dict, iteration = tenplex.load(device_rank, mlfs_path)
+    tim = time.time()
+    print(f"loaded state at {tim}")
 
     # Checkpoint.
     checkpoint_name = get_checkpoint_name(load_dir, iteration, release)
