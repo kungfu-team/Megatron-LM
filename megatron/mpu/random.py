@@ -13,24 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 # Parts of the code here are adapted from PyTorch
 # repo: https://github.com/pytorch/pytorch
 
 import contextlib
 
 import torch
+from megatron.memory import allocate_mem_buff
 from torch import _C
-from torch.cuda import _lazy_call, device as device_ctx_manager
+from torch.cuda import _lazy_call
+from torch.cuda import device as device_ctx_manager
 from torch.utils.checkpoint import detach_variable
 
-from megatron.memory import allocate_mem_buff
-
-from .initialize import get_data_parallel_rank
-from .initialize import get_tensor_model_parallel_group
-from .initialize import get_tensor_model_parallel_rank
-from .initialize import get_tensor_model_parallel_world_size
-
+from .initialize import (get_data_parallel_rank,
+                         get_tensor_model_parallel_group,
+                         get_tensor_model_parallel_rank,
+                         get_tensor_model_parallel_world_size)
 
 # Default name for the model parallel rng tracker.
 _MODEL_PARALLEL_RNG_TRACKER_NAME = 'model-parallel-rng'
@@ -76,20 +74,22 @@ def split_tensor_into_1d_equal_chunks(tensor, new_buffer=False):
     start_index = partition_size * get_tensor_model_parallel_rank()
     end_index = start_index + partition_size
     if new_buffer:
-        data = torch.empty(partition_size, dtype=tensor.dtype,
+        data = torch.empty(partition_size,
+                           dtype=tensor.dtype,
                            device=torch.cuda.current_device(),
                            requires_grad=False)
         data.copy_(tensor.view(-1)[start_index:end_index])
     else:
         data = tensor.view(-1)[start_index:end_index]
     return data
-    
+
 
 def gather_split_1d_tensor(tensor):
     """Opposite of above function, gather values from model parallel ranks."""
     numel_gathered = torch.numel(tensor) * \
         get_tensor_model_parallel_world_size()
-    gathered = torch.empty(numel_gathered, dtype=tensor.dtype,
+    gathered = torch.empty(numel_gathered,
+                           dtype=tensor.dtype,
                            device=torch.cuda.current_device(),
                            requires_grad=False)
     # TODO: This API is experimental in pytorch (as of Feb 2022) and
@@ -97,8 +97,8 @@ def gather_split_1d_tensor(tensor):
     # as opposed to torch.distributed.all_gather for efficiency reasons.
     # This API calls directly NCCL all-gather versus the former does
     # internal copies and can potentially cause slow down.
-    torch.distributed._all_gather_base(gathered, tensor,
-                                       group=get_tensor_model_parallel_group())
+    torch.distributed.all_gather_into_tensor(
+        gathered, tensor, group=get_tensor_model_parallel_group())
     return gathered
 
 
@@ -112,13 +112,14 @@ def _kernel_make_viewless_tensor(inp, requires_grad):
     field.
     '''
     out = torch.empty(
-        (1,),
-        dtype = inp.dtype,
-        device = inp.device,
-        requires_grad = requires_grad,
+        (1, ),
+        dtype=inp.dtype,
+        device=inp.device,
+        requires_grad=requires_grad,
     )
     out.data = inp.data
     return out
+
 
 class MakeViewlessTensor(torch.autograd.Function):
     '''
@@ -129,12 +130,15 @@ class MakeViewlessTensor(torch.autograd.Function):
     ParallelTransformer's hidden_states). Call this function by passing
     'keep_graph = True' to 'make_viewless_tensor()'.
     '''
+
     @staticmethod
     def forward(ctx, inp, requires_grad):
         return _kernel_make_viewless_tensor(inp, requires_grad)
+
     @staticmethod
     def backward(ctx, grad_output):
         return grad_output, None
+
 
 def make_viewless_tensor(inp, requires_grad, keep_graph):
     '''
@@ -156,20 +160,21 @@ def make_viewless_tensor(inp, requires_grad, keep_graph):
     else:
         return _kernel_make_viewless_tensor(inp, requires_grad)
 
-def assert_viewless_tensor(tensor, extra_msg = None):
+
+def assert_viewless_tensor(tensor, extra_msg=None):
     '''Assert that a tensor is not a view (i.e., its '._base' field is
     not set).'''
     if isinstance(tensor, list):
-        [ assert_viewless_tensor(t) for t in tensor ]
+        [assert_viewless_tensor(t) for t in tensor]
         return tensor
     if not isinstance(tensor, torch.Tensor):
         return tensor
     assert tensor._base is None, (
         "Ensure tensor._base is None before setting tensor.data or storing "
         "tensor to memory buffer. Otherwise, a memory leak will occur (and "
-        "likely accumulate over iterations). %s"
-    ) % extra_msg
+        "likely accumulate over iterations). %s") % extra_msg
     return tensor
+
 
 def safely_set_viewless_tensor_data(tensor, new_data_tensor):
     '''Safely set tensor's '.data' field.
@@ -177,7 +182,12 @@ def safely_set_viewless_tensor_data(tensor, new_data_tensor):
     Check first that the tensor is viewless (i.e., '._base' not set). If not,
     raise an exception.
     '''
-    assert_viewless_tensor(tensor, extra_msg = "FYI, tensor._base has shape %s, and new_data_tensor has shape %s." % ("--" if tensor._base is None else tensor._base.shape, new_data_tensor.shape))
+    assert_viewless_tensor(
+        tensor,
+        extra_msg=
+        "FYI, tensor._base has shape %s, and new_data_tensor has shape %s." %
+        ("--" if tensor._base is None else tensor._base.shape,
+         new_data_tensor.shape))
     tensor.data = new_data_tensor
 
 
@@ -288,9 +298,10 @@ def model_parallel_cuda_manual_seed(seed):
         print('> initializing model parallel cuda seeds on global rank {}, '
               'model parallel rank {}, and data parallel rank {} with '
               'model parallel seed: {} and data parallel seed: {}'.format(
-                  torch.distributed.get_rank(), get_tensor_model_parallel_rank(),
-                  get_data_parallel_rank(), tensor_model_parallel_seed,
-                  data_parallel_seed), flush=True)
+                  torch.distributed.get_rank(),
+                  get_tensor_model_parallel_rank(), get_data_parallel_rank(),
+                  tensor_model_parallel_seed, data_parallel_seed),
+              flush=True)
     _CUDA_RNG_STATE_TRACKER.reset()
     # Set the default state.
     torch.cuda.manual_seed(data_parallel_seed)
@@ -306,6 +317,7 @@ class CheckpointFunction(torch.autograd.Function):
            2) the states in the model parallel tracker are also properly
               tracked/set/reset.
     """
+
     @staticmethod
     def forward(ctx, run_function, distribute_saved_activations, *args):
         ctx.run_function = run_function
@@ -326,7 +338,8 @@ class CheckpointFunction(torch.autograd.Function):
             ctx.input_0_shape = args[0].data.shape
             safely_set_viewless_tensor_data(
                 args[0],
-                split_tensor_into_1d_equal_chunks(args[0].data, new_buffer=True))
+                split_tensor_into_1d_equal_chunks(args[0].data,
+                                                  new_buffer=True))
 
         # Store everything.
         ctx.save_for_backward(*args)
@@ -365,7 +378,7 @@ class CheckpointFunction(torch.autograd.Function):
         get_cuda_rng_tracker().set_states(bwd_cuda_rng_state_tracker)
 
         if isinstance(outputs, torch.Tensor):
-            outputs = (outputs,)
+            outputs = (outputs, )
         torch.autograd.backward(outputs, args)
         grads = tuple(inp.grad if isinstance(inp, torch.Tensor) else inp
                       for inp in detached_inputs)
@@ -375,5 +388,5 @@ class CheckpointFunction(torch.autograd.Function):
 def checkpoint(function, distribute_saved_activations, *args):
     """Checkpoint a model or part of the model.
     This has been directly copied from torch.utils.checkpoint."""
-    return CheckpointFunction.apply(function,
-                                    distribute_saved_activations, *args)
+    return CheckpointFunction.apply(function, distribute_saved_activations,
+                                    *args)
