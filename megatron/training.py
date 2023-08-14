@@ -753,10 +753,12 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
     import requests
 
     def check_stop():
+        if args.scheduler_addr is None:
+            return False
         url = args.scheduler_addr
         url = os.path.join(url, "stop")
         if torch.distributed.get_rank() == 0:
-            req = requests.get(url)
+            req = requests.get(url, timeout=12)
             txt = req.text
             if txt == "stop":
                 stop = torch.tensor(1,
@@ -780,6 +782,12 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
     print_datetime('before the start of training step')
     report_memory_flag = True
     while iteration < args.train_iters:
+        # Tenplex
+        stop = check_stop()
+        if stop:
+            print("Tenplex STOP")
+            break
+
         update_num_microbatches(args.consumed_train_samples)
         args.curr_iteration = iteration
         loss_dict, skipped_iter, grad_norm, num_zeros_in_grad = \
