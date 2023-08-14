@@ -2,20 +2,18 @@
 
 FROM kungfu.azurecr.io/mw-base:latest
 
-# PORT
-EXPOSE 6000
-
 WORKDIR /workspace
 
 RUN apt-get install ninja-build
 RUN pip install \
     six \
     regex \
-    pybind11
+    pybind11 \
+    packaging
 
 RUN git clone https://github.com/NVIDIA/apex.git
 RUN cd apex && \
-    git checkout 22.03 && \
+    git checkout 23.05 && \
     pip install -v --disable-pip-version-check --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
 
 # Megatron-LM
