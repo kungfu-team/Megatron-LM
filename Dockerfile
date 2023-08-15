@@ -1,5 +1,4 @@
 #!/usr/bin/env -S sh -c 'docker build --rm -t kungfu.azurecr.io/mw-megatron-lm:latest -f $0 .'
-
 FROM kungfu.azurecr.io/mw-base:latest
 
 WORKDIR /workspace
@@ -11,11 +10,12 @@ RUN pip install \
     pybind11 \
     packaging
 
-RUN git clone https://github.com/NVIDIA/apex.git
-RUN cd apex && \
+RUN git clone https://github.com/NVIDIA/apex.git && \
+    cd apex && \
     git checkout 23.05 && \
-    pip install -v --disable-pip-version-check --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
+    pip install -v --disable-pip-version-check --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./ && \
+    rm -r /workspace/apex
 
 # Megatron-LM
-ADD . Megatron-LM
+COPY . Megatron-LM
 WORKDIR /workspace/Megatron-LM
