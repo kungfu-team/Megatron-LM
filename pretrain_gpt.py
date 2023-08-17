@@ -12,32 +12,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Pretrain GPT"""
 
-import torch
 from functools import partial
-from megatron import get_args
-from megatron import print_rank_0
-from megatron import get_timers
-from megatron import get_tokenizer
-from megatron import mpu
+
+import torch
+
+from megatron import get_args, get_timers, get_tokenizer, mpu, print_rank_0
 from megatron.data.gpt_dataset import build_train_valid_test_datasets
 from megatron.model import GPTModel, ModelType
 from megatron.training import pretrain
-from megatron.utils import get_ltor_masks_and_position_ids
-from megatron.utils import average_losses_across_data_parallel_group
+from megatron.utils import (average_losses_across_data_parallel_group,
+                            get_ltor_masks_and_position_ids)
+
 
 def model_provider(pre_process=True, post_process=True):
     """Build the model."""
 
     print_rank_0('building GPT model ...')
-    model = GPTModel(
-        num_tokentypes=0,
-        parallel_output=True,
-        pre_process=pre_process,
-        post_process=post_process
-    )
+    model = GPTModel(num_tokentypes=0,
+                     parallel_output=True,
+                     pre_process=pre_process,
+                     post_process=post_process)
     return model
 
 
@@ -64,13 +60,11 @@ def get_batch(data_iterator):
 
     # Get the masks and postition ids.
     attention_mask, loss_mask, position_ids = get_ltor_masks_and_position_ids(
-        tokens,
-        tokenizer.eod,
-        args.reset_position_ids,
-        args.reset_attention_mask,
-        args.eod_mask_loss)
+        tokens, tokenizer.eod, args.reset_position_ids,
+        args.reset_attention_mask, args.eod_mask_loss)
 
     return tokens, labels, loss_mask, attention_mask, position_ids
+
 
 def loss_func(loss_mask, output_tensor):
     losses = output_tensor.float()
@@ -94,8 +88,7 @@ def forward_step(data_iterator, model):
         data_iterator)
     timers('batch-generator').stop()
 
-    output_tensor = model(tokens, position_ids, attention_mask,
-                          labels=labels)
+    output_tensor = model(tokens, position_ids, attention_mask, labels=labels)
 
     return output_tensor, partial(loss_func, loss_mask)
 
@@ -121,6 +114,8 @@ def train_valid_test_datasets_provider(train_val_test_num_samples):
 
 if __name__ == "__main__":
 
-    pretrain(train_valid_test_datasets_provider, model_provider,
+    pretrain(train_valid_test_datasets_provider,
+             model_provider,
              ModelType.encoder_or_decoder,
-             forward_step, args_defaults={'tokenizer_type': 'GPT2BPETokenizer'})
+             forward_step,
+             args_defaults={'tokenizer_type': 'GPT2BPETokenizer'})

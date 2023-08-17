@@ -15,9 +15,12 @@
 """Pretrain utilities."""
 
 import math
+import os
 import sys
 import time
 from datetime import datetime
+
+import requests
 
 # The earliest we can measure the start time.
 _TRAIN_START_TIME = time.time()
@@ -720,6 +723,33 @@ def save_checkpoint_and_time(iteration, model, optimizer, opt_param_scheduler):
     timers.log(['save-checkpoint'])
 
 
+def check_stop(scheduler_addr):
+    if scheduler_addr is None:
+        return False
+    stop = False
+    rank = torch.distributed.get_rank()
+    if rank == 0:
+        url = scheduler_addr
+        url = os.path.join(url, "stop")
+        req = requests.get(url, timeout=12)
+        txt = req.text
+        if txt == "stop":
+            stop = True
+    if stop:
+        stop_ten = torch.tensor(1,
+                                dtype=torch.int32,
+                                device=torch.device("cuda"))
+    else:
+        stop_ten = torch.tensor(0,
+                                dtype=torch.int32,
+                                device=torch.device("cuda"))
+    torch.distributed.all_reduce(stop_ten)
+    if stop_ten == 1:
+        return True
+    else:
+        return False
+
+
 def train(forward_step_func, model, optimizer, opt_param_scheduler,
           train_data_iterator, valid_data_iterator,
           process_non_loss_data_func):
@@ -748,42 +778,12 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
     pp = mpu.get_pipeline_model_parallel_world_size()
     print(f"PP world size {pp}")
 
-    import os
-
-    import requests
-
-    def check_stop():
-        if args.scheduler_addr is None:
-            return False
-        url = args.scheduler_addr
-        url = os.path.join(url, "stop")
-        if torch.distributed.get_rank() == 0:
-            req = requests.get(url, timeout=12)
-            txt = req.text
-            if txt == "stop":
-                stop = torch.tensor(1,
-                                    dtype=torch.int32,
-                                    device=torch.device('cuda:0'))
-            else:
-                stop = torch.tensor(0,
-                                    dtype=torch.int32,
-                                    device=torch.device('cuda:0'))
-        else:
-            stop = torch.tensor(0,
-                                dtype=torch.int32,
-                                device=torch.device('cuda:0'))
-        torch.distributed.all_reduce(stop, op=torch.distributed.ReduceOp.MAX)
-        if stop == 1:
-            return True
-        else:
-            return False
-
     timers('interval-time').start()
     print_datetime('before the start of training step')
     report_memory_flag = True
     while iteration < args.train_iters:
         # Tenplex
-        stop = check_stop()
+        stop = check_stop(args.scheduler_addr)
         if stop:
             print("Tenplex STOP")
             break
