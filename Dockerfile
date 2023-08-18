@@ -1,14 +1,15 @@
 #!/usr/bin/env -S sh -c 'docker build --rm -t kungfu.azurecr.io/mw-megatron-lm:latest -f $0 .'
-FROM kungfu.azurecr.io/mw-pytorch1:latest
+FROM kungfu.azurecr.io/mw-pytorch1-tenplex:latest
 
 WORKDIR /workspace
 
 RUN apt-get install ninja-build
-RUN pip install \
+RUN pip install --no-cache-dir \
     six \
     regex \
     pybind11 \
-    packaging
+    packaging \
+    tensorboard
 
 RUN git clone https://github.com/NVIDIA/apex.git && \
     cd apex && \
