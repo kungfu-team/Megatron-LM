@@ -14,6 +14,7 @@
 # limitations under the License.
 """Pretrain GPT"""
 
+import time
 from functools import partial
 
 import torch
@@ -79,7 +80,6 @@ def loss_func(loss_mask, output_tensor):
 
 def forward_step(data_iterator, model):
     """Forward step."""
-    args = get_args()
     timers = get_timers()
 
     # Get the batch.
@@ -113,9 +113,12 @@ def train_valid_test_datasets_provider(train_val_test_num_samples):
 
 
 if __name__ == "__main__":
+    print(f"start pretrain script at {time.time()}")
 
     pretrain(train_valid_test_datasets_provider,
              model_provider,
              ModelType.encoder_or_decoder,
              forward_step,
              args_defaults={'tokenizer_type': 'GPT2BPETokenizer'})
+
+    print(f"stop pretrain script at {time.time()}")

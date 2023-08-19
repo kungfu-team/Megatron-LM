@@ -168,6 +168,10 @@ def get_rng_state():
 
 def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
     """Save a model checkpoint."""
+
+    saving_start = time.time()
+    print(f"saving checkpoint start at {saving_start}")
+
     args = get_args()
 
     # Only rank zero of the data parallel writes to the disk.
@@ -234,6 +238,11 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
     # Wait so everyone is done (necessary)
     if torch.distributed.is_initialized():
         torch.distributed.barrier()
+
+    saving_finish = time.time()
+    print(f"saving checkpoint finished at {saving_finish}")
+    saving_duration = saving_finish - saving_start
+    print(f"saving checkpoint took {saving_duration} s")
 
     print_rank_0(
         '  successfully saved checkpoint at iteration {:7d} to {}'.format(
@@ -338,6 +347,9 @@ def load_checkpoint(model,
         :attr:`state_dict` of the checkpoint match the names of
         parameters and buffers in model.
     """
+
+    load_start = time.time()
+    print(f"start loading checkpoint at {load_start}")
 
     args = get_args()
     load_dir = getattr(args, load_arg)
@@ -500,6 +512,11 @@ def load_checkpoint(model,
     # Some utilities want to load a checkpoint without distributed being initialized
     if torch.distributed.is_initialized():
         torch.distributed.barrier()
+
+    load_finish = time.time()
+    print(f"loading checkpoint finished at {load_finish}")
+    load_duration = load_finish - load_start
+    print(f"loading checkpoint took {load_duration} s")
 
     print(f'successfully loaded checkpoint from {args.load} '
           f'at iteration {iteration}')

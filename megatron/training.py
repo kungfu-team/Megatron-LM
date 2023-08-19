@@ -778,6 +778,8 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
     pp = mpu.get_pipeline_model_parallel_world_size()
     print(f"PP world size {pp}")
 
+    print(f"start training loop at {time.time()}")
+
     timers('interval-time').start()
     print_datetime('before the start of training step')
     report_memory_flag = True
@@ -785,7 +787,7 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
         # Tenplex
         stop = check_stop(args.scheduler_addr)
         if stop:
-            print("Tenplex STOP")
+            print(f"Tenplex STOP at {time.time()}")
             break
 
         update_num_microbatches(args.consumed_train_samples)
