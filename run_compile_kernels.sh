@@ -7,5 +7,5 @@ docker run \
     -t kungfu.azurecr.io/mw-megatron-lm:latest \
     python compile_kernels.py
 
-docker commit tenplex-compile kungfu.azurecr.io/mw-megatron-lm-kernel:latest
-docker push kungfu.azurecr.io/mw-megatron-lm-kernel:latest
+docker commit tenplex-compile kungfu.azurecr.io/mw-megatron-lm-kernels:latest
+docker push kungfu.azurecr.io/mw-megatron-lm-kernels:latest
