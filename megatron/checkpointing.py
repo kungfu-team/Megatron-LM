@@ -183,49 +183,46 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
     # collect rng state across data parallel ranks
     rng_state = get_rng_state()
 
-    if not torch.distributed.is_initialized() or mpu.get_data_parallel_rank(
-    ) == 0:
+    # Arguments, iteration, and model.
+    state_dict = {}
+    state_dict['args'] = args
+    state_dict['checkpoint_version'] = 3.0
+    state_dict['iteration'] = iteration
+    if len(model) == 1:
+        state_dict['model'] = model[0].state_dict_for_save_checkpoint()
+    else:
+        for i in range(len(model)):
+            mpu.set_virtual_pipeline_model_parallel_rank(i)
+            state_dict['model%d' %
+                       i] = model[i].state_dict_for_save_checkpoint()
 
-        # Arguments, iteration, and model.
-        state_dict = {}
-        state_dict['args'] = args
-        state_dict['checkpoint_version'] = 3.0
-        state_dict['iteration'] = iteration
-        if len(model) == 1:
-            state_dict['model'] = model[0].state_dict_for_save_checkpoint()
-        else:
-            for i in range(len(model)):
-                mpu.set_virtual_pipeline_model_parallel_rank(i)
-                state_dict['model%d' %
-                           i] = model[i].state_dict_for_save_checkpoint()
+    # Optimizer stuff.
+    if not args.no_save_optim:
+        if optimizer is not None:
+            state_dict['optimizer'] = optimizer.state_dict()
+        if opt_param_scheduler is not None:
+            state_dict[
+                'opt_param_scheduler'] = opt_param_scheduler.state_dict()
 
-        # Optimizer stuff.
-        if not args.no_save_optim:
-            if optimizer is not None:
-                state_dict['optimizer'] = optimizer.state_dict()
-            if opt_param_scheduler is not None:
-                state_dict[
-                    'opt_param_scheduler'] = opt_param_scheduler.state_dict()
+    # RNG states.
+    if not args.no_save_rng:
+        state_dict["rng_state"] = rng_state
 
-        # RNG states.
-        if not args.no_save_rng:
-            state_dict["rng_state"] = rng_state
+    # Save.
+    #  checkpoint_name = get_checkpoint_name(args.save, iteration)
+    #  ensure_directory_exists(checkpoint_name)
+    #  torch.save(state_dict, checkpoint_name)
 
-        # Save.
-        #  checkpoint_name = get_checkpoint_name(args.save, iteration)
-        #  ensure_directory_exists(checkpoint_name)
-        #  torch.save(state_dict, checkpoint_name)
-
-        # Tenplex
-        tim = time.time()
-        print(f"save state at {tim}")
-        device_rank = torch.distributed.get_rank()
-        jobid = args.jobid
-        mlfs_path = args.mlfs_path
-        ip = args.host_ip
-        port = args.mlfs_port
-        tenplex.save(state_dict, jobid, iteration, device_rank, mlfs_path, ip,
-                     port)
+    # Tenplex
+    tim = time.time()
+    print(f"save state at {tim}")
+    device_rank = torch.distributed.get_rank()
+    jobid = args.jobid
+    mlfs_path = args.mlfs_path
+    ip = args.host_ip
+    port = args.mlfs_port
+    tenplex.save(state_dict, jobid, iteration, device_rank, mlfs_path, ip,
+                 port)
 
     # Tenplex
     device_rank = torch.distributed.get_rank()
