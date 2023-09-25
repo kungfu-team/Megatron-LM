@@ -170,7 +170,7 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
     """Save a model checkpoint."""
 
     saving_start = time.time()
-    print(f"saving checkpoint start at {saving_start}")
+    print(f"start megatron.save_checkpoint at {saving_start}")
 
     args = get_args()
 
@@ -214,8 +214,6 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
     #  torch.save(state_dict, checkpoint_name)
 
     # Tenplex
-    tim = time.time()
-    print(f"save state at {tim}")
     device_rank = torch.distributed.get_rank()
     jobid = args.jobid
     mlfs_path = args.mlfs_path
@@ -237,9 +235,9 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
         torch.distributed.barrier()
 
     saving_finish = time.time()
-    print(f"saving checkpoint finished at {saving_finish}")
+    print(f"finished megatron.save_checkpoint at {saving_finish}")
     saving_duration = saving_finish - saving_start
-    print(f"saving checkpoint took {saving_duration} s")
+    print(f"megatron.save_checkpoint took {saving_duration} s")
 
     print_rank_0(
         '  successfully saved checkpoint at iteration {:7d} to {}'.format(
@@ -346,7 +344,7 @@ def load_checkpoint(model,
     """
 
     load_start = time.time()
-    print(f"start loading checkpoint at {load_start}")
+    print(f"start megatron.load_checkpoint {load_start}")
 
     args = get_args()
     load_dir = getattr(args, load_arg)
@@ -511,9 +509,9 @@ def load_checkpoint(model,
         torch.distributed.barrier()
 
     load_finish = time.time()
-    print(f"loading checkpoint finished at {load_finish}")
+    print(f"finished megatron.load_checkpoint at {load_finish}")
     load_duration = load_finish - load_start
-    print(f"loading checkpoint took {load_duration} s")
+    print(f"megatron.load_checkpoint took {load_duration} s")
 
     print(f'successfully loaded checkpoint from {args.load} '
           f'at iteration {iteration}')
