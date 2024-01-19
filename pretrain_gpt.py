@@ -14,7 +14,7 @@ from megatron.core import mpu, tensor_parallel
 from megatron.core.enums import ModelType
 from megatron.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
 from megatron.core.datasets.blended_megatron_dataset_config import GPTDatasetConfig
-from megatron.core.datasets.gpt_dataset import GPTDataset
+from tenplex.dataset import GPTDataset
 import megatron.model
 from megatron.core.models.gpt import GPTModel
 from megatron.training import pretrain
