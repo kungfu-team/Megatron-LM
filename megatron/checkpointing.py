@@ -6,6 +6,8 @@ import os
 import random
 import sys
 import numpy as np
+import tenplex
+import requests
 
 import torch
 
@@ -291,8 +293,12 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
             state_dict["rng_state"] = rng_state
 
         # Save.
-        ensure_directory_exists(checkpoint_name)
-        torch.save(state_dict, checkpoint_name)
+        device_rank = torch.distributed.get_rank()
+        jobid = args.jobid
+        mlfs_path = args.mlfs_path
+        ip = args.host_ip
+        port = args.mlfs_port
+        tenplex.save(state_dict, jobid, iteration, device_rank, mlfs_path, ip, port)
 
     # Wait so everyone is done (necessary)
     if torch.distributed.is_initialized():
@@ -388,52 +394,32 @@ def _load_base_checkpoint(load_dir, rank0=False):
 
     If rank0 is true, just loads rank 0 checkpoint, ignoring arguments.
     """
+    release = False
 
-    # Read the tracker file and set the iteration.
-    tracker_filename = get_checkpoint_tracker_filename(load_dir)
-
-    # If no tracker file, return nothing
-    if not os.path.isfile(tracker_filename):
-        if not rank0:
-            print_rank_0('WARNING: could not find the metadata file {} '.format(
-                tracker_filename))
-            print_rank_0('    will not load any checkpoints and will start from '
-                         'random')
-        return None, "", False
-
-    # Otherwise, read the tracker file and either set the iteration or
-    # mark it as a release checkpoint.
-    iteration, release = read_metadata(tracker_filename)
+    # Load the checkpoint.
+    device_rank = torch.distributed.get_rank()
+    args = get_args()
+    jobid = args.jobid
+    ip = args.host_ip
+    port = args.mlfs_port
+    path = f"/job/{jobid}/iter"
+    url = f"http://{ip}:{port}/query"
+    # TODO: push request into load_http
+    res = requests.get(
+        url, headers={"Content-Type": "text"}, params={"path": path}, timeout=12
+    )
+    if res.status_code != 200:
+        print_rank_0("will not load any checkpoints and will start from random")
+        return {}, "", release
+    state_dict, iteration = tenplex.load_http(jobid, device_rank, ip, port)
 
     # Checkpoint.
     if rank0:
         checkpoint_name = find_checkpoint_rank_0(load_dir, iteration, release)
     else:
         checkpoint_name = get_checkpoint_name(load_dir, iteration, release)
-        if release:
-            print_rank_0(f' loading release checkpoint from {load_dir}')
-        else:
-            print_rank_0(f' loading checkpoint from {load_dir} at iteration {iteration}')
 
-    # Load the checkpoint.
-    try:
-        state_dict = torch.load(checkpoint_name, map_location='cpu')
-    except ModuleNotFoundError:
-        from megatron.fp16_deprecated import loss_scaler
-        # For backward compatibility.
-        if not rank0:
-            print_rank_0(' > deserializing using the old code structure ...')
-        sys.modules['fp16.loss_scaler'] = sys.modules[
-            'megatron.fp16_deprecated.loss_scaler']
-        sys.modules['megatron.fp16.loss_scaler'] = sys.modules[
-            'megatron.fp16_deprecated.loss_scaler']
-        state_dict = torch.load(checkpoint_name, map_location='cpu')
-        sys.modules.pop('fp16.loss_scaler', None)
-        sys.modules.pop('megatron.fp16.loss_scaler', None)
-    except BaseException as e:
-        print_rank_0('could not load the checkpoint')
-        print_rank_0(e)
-        sys.exit()
+
 
     return state_dict, checkpoint_name, release
 

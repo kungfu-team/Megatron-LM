@@ -8,6 +8,7 @@ import json
 import os
 import torch
 import types
+import tenplex
 
 import torch.nn.functional as F
 from megatron.global_vars import set_retro_args, get_retro_args
@@ -41,6 +42,7 @@ def parse_args(extra_args_provider=None, ignore_unknown_args=False):
     parser = _add_transformer_engine_args(parser)
     parser = _add_retro_args(parser)
     parser = _add_experimental_args(parser)
+    parser = tenplex.arguments.add_tenplex_args(parser)
 
     # Custom arguments.
     if extra_args_provider is not None:

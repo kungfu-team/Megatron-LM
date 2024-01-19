@@ -535,7 +535,7 @@ def build_dataset(name, data_prefix, max_num_samples,
                   max_seq_length_dec, dataset_type='standard_bert',
                   indexed_dataset=None):
 
-    from megatron.data.bert_dataset import BertDataset
+    from tenplex.dataset import BERTDataset
     from megatron.data.ict_dataset import ICTDataset
     from megatron.data.t5_dataset import T5Dataset
     from megatron.data.multimodal_dataset import MultiModalDataset
@@ -582,13 +582,8 @@ def build_dataset(name, data_prefix, max_num_samples,
         )
     elif dataset_type == DSET_TYPE_BERT:
         args = get_args()
-        dataset = BertDataset(
-            indexed_dataset=indexed_dataset,
-            masked_lm_prob=args.mask_prob,
-            short_seq_prob=args.short_seq_prob,
-            binary_head=binary_head,
-            **kwargs
-        )
+        dp_rank = mpu.get_data_parallel_rank()
+        dataset = BERTDataset(args.mlfs_path, dp_rank)
     elif dataset_type == DSET_TYPE_MULTIMODAL:
         args = get_args()
         dataset = MultiModalDataset(

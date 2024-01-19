@@ -14,6 +14,7 @@ import time
 # The earliest we can measure the start time.
 _TRAIN_START_TIME = time.time()
 import torch
+import tenplex
 
 from megatron import get_args
 from megatron import get_signal_handler
@@ -740,6 +741,9 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
         gc.collect()
 
     while iteration < args.train_iters:
+        if tenplex.stop.check_stop(args.scheduler_addr):
+            break
+
         if args.profile and \
            iteration == args.profile_step_start and \
            torch.distributed.get_rank() in args.profile_ranks:
