@@ -5,11 +5,12 @@
 import hashlib
 import os
 import time
+import tenplex
 
 import numpy as np
 import torch
 
-from megatron import print_rank_0
+from megatron import print_rank_0, get_args
 from megatron.core import mpu
 from megatron.data.blendable_dataset import BlendableDataset
 from megatron.data.dataset_utils import get_datasets_weights_and_num_samples
@@ -143,14 +144,9 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
     def build_dataset(index, name):
         dataset = None
         if splits[index + 1] > splits[index]:
-            documents = np.arange(start=splits[index], stop=splits[index + 1],
-                                  step=1, dtype=np.int32)
-            dataset = GPTDataset(name, data_prefix, documents, indexed_dataset,
-                                 splits_string,
-                                 train_valid_test_num_samples[index],
-                                 seq_length, seed,
-                                 return_doc_ids,
-                                 data_cache_path=data_cache_path)
+            args = get_args()
+            dp_rank = mpu.get_data_parallel_rank()
+            dataset = tenplex.dataset.GPTDataset(args.mlfs_path, dp_rank)
         return dataset
 
     train_dataset = build_dataset(0, 'train')
@@ -215,12 +211,9 @@ def _build_dataset(dataset_name, data_prefix, data_impl, splits_string,
     print_rank_0('     document indices in [0, {}) total of {} '
                  'documents'.format(total_num_of_documents, total_num_of_documents))
 
-    documents = np.arange(start=0, stop=total_num_of_documents,
-                        step=1, dtype=np.int32)
-
-    dataset = GPTDataset(dataset_name, data_prefix, documents, indexed_dataset,
-                         splits_string, num_samples, seq_length, seed,
-                         data_cache_path=data_cache_path)
+    args = get_args()
+    dp_rank = mpu.get_data_parallel_rank()
+    dataset = tenplex.dataset.GPTDataset(args.mlfs_path, dp_rank)
 
     return dataset
 
