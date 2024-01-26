@@ -121,29 +121,9 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
                                      data_cache_path=None):
     """Build train, valid, and test datasets."""
 
-    # Indexed dataset.
-    indexed_dataset = get_indexed_dataset_(data_prefix,
-                                           data_impl,
-                                           skip_warmup)
-
-    total_num_of_documents = indexed_dataset.sizes.shape[0]
-    splits = get_train_valid_test_split_(splits_string, total_num_of_documents)
-
-    # Print stats about the splits.
-    print_rank_0(' > dataset split:')
-
-    def print_split_stats(name, index):
-        print_rank_0('    {}:'.format(name))
-        print_rank_0('     document indices in [{}, {}) total of {} '
-                     'documents'.format(splits[index], splits[index + 1],
-                                        splits[index + 1] - splits[index]))
-    print_split_stats('train', 0)
-    print_split_stats('validation', 1)
-    print_split_stats('test', 2)
-
     def build_dataset(index, name):
         dataset = None
-        if splits[index + 1] > splits[index]:
+        if name == "train":
             args = get_args()
             dp_rank = mpu.get_data_parallel_rank()
             dataset = tenplex.dataset.GPTDataset(args.mlfs_path, dp_rank)
