@@ -382,7 +382,7 @@ def _load_base_checkpoint(load_dir, rank0=False):
     )
     if res.status_code != 200:
         print_rank_0("will not load any checkpoints and will start from random")
-        return {}, "", release
+        return {}, release
     state_dict, _ = tenplex.load_http(jobid, device_rank, ip, port)
 
     return state_dict, release

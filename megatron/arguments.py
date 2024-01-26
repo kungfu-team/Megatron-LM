@@ -7,7 +7,7 @@ import json
 import os
 import torch
 import types
-import tenplex
+import tenplex.arguments
 
 from megatron.global_vars import set_retro_args, get_retro_args
 from tools.retro.utils import get_args_path as get_retro_args_path
