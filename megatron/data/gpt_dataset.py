@@ -5,7 +5,7 @@
 import hashlib
 import os
 import time
-import tenplex
+from tenplex.dataset import GPTDataset as TenplexGPTDataset
 
 import numpy as np
 import torch
@@ -126,7 +126,7 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
         if name == "train":
             args = get_args()
             dp_rank = mpu.get_data_parallel_rank()
-            dataset = tenplex.dataset.GPTDataset(args.mlfs_path, dp_rank)
+            dataset = TenplexGPTDataset(args.mlfs_path, dp_rank)
         return dataset
 
     train_dataset = build_dataset(0, 'train')
@@ -193,7 +193,7 @@ def _build_dataset(dataset_name, data_prefix, data_impl, splits_string,
 
     args = get_args()
     dp_rank = mpu.get_data_parallel_rank()
-    dataset = tenplex.dataset.GPTDataset(args.mlfs_path, dp_rank)
+    dataset = TenplexGPTDataset(args.mlfs_path, dp_rank)
 
     return dataset
 
