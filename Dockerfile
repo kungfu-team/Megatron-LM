@@ -14,14 +14,10 @@ RUN pip install --no-cache-dir \
 RUN git clone https://github.com/NVIDIA/apex.git && \
     cd apex && \
     git checkout 23.06 && \
-    pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --global-option="--cpp_ext" --global-option="--cuda_ext" ./ && \
-    cd /workspace
-
-COPY build/tenplex /workspace/tenplex
-RUN cd tenplex && \
-    pip install --no-cache-dir . && \
-    cd /workspace
+    pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --global-option="--cpp_ext" --global-option="--cuda_ext" .
+WORKDIR /workspace
 
 COPY . Megatron-LM
 WORKDIR /workspace/Megatron-LM
 RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir ./build/tenplex
