@@ -20,4 +20,3 @@ WORKDIR /workspace
 COPY . Megatron-LM
 WORKDIR /workspace/Megatron-LM
 RUN pip install --no-cache-dir .
-RUN pip install --no-cache-dir ./build/tenplex
