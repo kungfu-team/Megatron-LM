@@ -371,9 +371,9 @@ def _load_base_checkpoint(load_dir, rank0=False):
     If rank0 is true, just loads rank 0 checkpoint, ignoring arguments.
     """
 
+    args = get_args()
     if args.tenplex:
         device_rank = torch.distributed.get_rank()
-        args = get_args()
         jobid = args.jobid
         ip = args.host_ip
         port = args.mlfs_port
