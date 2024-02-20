@@ -33,6 +33,7 @@ from megatron import (
 from megatron.core import mpu
 from megatron.data.blendable_dataset import BlendableDataset
 from megatron.data.indexed_dataset import make_dataset as make_indexed_dataset
+from tenplex.dataset import BERTDataset as TenplexBertDataset
 
 DSET_TYPE_BERT = 'standard_bert'
 DSET_TYPE_ICT = 'ict'
@@ -568,13 +569,18 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
                     **kwargs
                 )
             elif dataset_type == DSET_TYPE_BERT:
-                dataset = BertDataset(
-                    indexed_dataset=indexed_dataset,
-                    masked_lm_prob=masked_lm_prob,
-                    short_seq_prob=short_seq_prob,
-                    binary_head=binary_head,
-                    **kwargs
-                )
+                if args.tenplex:
+                    args = get_args()
+                    dp_rank = mpu.get_data_parallel_rank()
+                    dataset = TenplexBertDataset(args.mlfs_path, dp_rank)
+                else:
+                    dataset = BertDataset(
+                        indexed_dataset=indexed_dataset,
+                        masked_lm_prob=masked_lm_prob,
+                        short_seq_prob=short_seq_prob,
+                        binary_head=binary_head,
+                        **kwargs
+                    )
             else:
                 raise NotImplementedError("Dataset type not fully implemented.")
 

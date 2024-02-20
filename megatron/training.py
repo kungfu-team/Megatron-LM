@@ -10,6 +10,7 @@ import time
 _TRAIN_START_TIME = time.time()
 import torch
 from torch.nn.parallel.distributed import DistributedDataParallel as torchDDP
+import tenplex
 
 from megatron import get_args
 from megatron import get_signal_handler
@@ -701,6 +702,9 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
     print_datetime('before the start of training step')
     report_memory_flag = True
     while iteration < args.train_iters:
+        if args.tenplex and tenplex.check_stop(args.scheduler_addr):
+            break
+
         update_num_microbatches(args.consumed_train_samples)
         args.curr_iteration = iteration
         loss_dict, skipped_iter, grad_norm, num_zeros_in_grad = \

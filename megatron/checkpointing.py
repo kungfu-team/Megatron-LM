@@ -6,6 +6,8 @@ import os
 import random
 import sys
 import numpy as np
+import tenplex
+import requests
 
 import torch
 
@@ -264,8 +266,16 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
             state_dict["rng_state"] = rng_state
 
         # Save.
-        ensure_directory_exists(checkpoint_name)
-        torch.save(state_dict, checkpoint_name)
+        if args.tenplex:
+            device_rank = torch.distributed.get_rank()
+            jobid = args.jobid
+            mlfs_path = args.mlfs_path
+            ip = args.host_ip
+            port = args.mlfs_port
+            tenplex.save(state_dict, jobid, iteration, device_rank, mlfs_path, ip, port)
+        else:
+            ensure_directory_exists(checkpoint_name)
+            torch.save(state_dict, checkpoint_name)
 
     # Wait so everyone is done (necessary)
     if torch.distributed.is_initialized():
@@ -360,6 +370,25 @@ def _load_base_checkpoint(load_dir, rank0=False):
 
     If rank0 is true, just loads rank 0 checkpoint, ignoring arguments.
     """
+
+    if args.tenplex:
+        device_rank = torch.distributed.get_rank()
+        args = get_args()
+        jobid = args.jobid
+        ip = args.host_ip
+        port = args.mlfs_port
+        path = f"/job/{jobid}/iter"
+        url = f"http://{ip}:{port}/query"
+        # TODO: push request into load_http
+        res = requests.get(
+            url, headers={"Content-Type": "text"}, params={"path": path}, timeout=12
+        )
+        if res.status_code != 200:
+            print_rank_0("will not load any checkpoints and will start from random")
+            return None, False
+        state_dict, _ = tenplex.load_http(jobid, device_rank, ip, port)
+
+        return state_dict, False
 
     # Read the tracker file and set the iteration.
     tracker_filename = get_checkpoint_tracker_filename(load_dir)

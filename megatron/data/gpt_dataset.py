@@ -9,12 +9,13 @@ import time
 import numpy as np
 import torch
 
-from megatron import print_rank_0
+from megatron import print_rank_0, get_args
 from megatron.core import mpu
 from megatron.data.blendable_dataset import BlendableDataset
 from megatron.data.dataset_utils import get_datasets_weights_and_num_samples
 from megatron.data.dataset_utils import get_train_valid_test_split_
 from megatron.data.indexed_dataset import make_dataset as make_indexed_dataset
+from tenplex.dataset import GPTDataset as TenplexGPTDataset
 
 
 def build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
@@ -139,6 +140,12 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
     print_split_stats('train', 0)
     print_split_stats('validation', 1)
     print_split_stats('test', 2)
+
+    args = get_args()
+    if args.tenplex:
+        dp_rank = mpu.get_data_parallel_rank()
+        dataset = TenplexGPTDataset(args.mlfs_path, dp_rank)
+        return dataset, None, None
 
     def build_dataset(index, name):
         dataset = None
