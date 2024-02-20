@@ -121,6 +121,13 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
                                      data_cache_path=None):
     """Build train, valid, and test datasets."""
 
+    # Tenplex
+    args = get_args()
+    if args.tenplex:
+        dp_rank = mpu.get_data_parallel_rank()
+        dataset = TenplexGPTDataset(args.mlfs_path, dp_rank)
+        return dataset, None, None
+
     # Indexed dataset.
     indexed_dataset = get_indexed_dataset_(data_prefix,
                                            data_impl,
@@ -140,12 +147,6 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
     print_split_stats('train', 0)
     print_split_stats('validation', 1)
     print_split_stats('test', 2)
-
-    args = get_args()
-    if args.tenplex:
-        dp_rank = mpu.get_data_parallel_rank()
-        dataset = TenplexGPTDataset(args.mlfs_path, dp_rank)
-        return dataset, None, None
 
     def build_dataset(index, name):
         dataset = None
