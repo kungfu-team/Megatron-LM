@@ -4,7 +4,7 @@
 
 import math
 
-from megatron import print_rank_0, get_args
+from megatron import print_rank_0
 
 class OptimizerParamScheduler(object):
     """Anneals learning rate and weight decay"""
@@ -211,13 +211,10 @@ class OptimizerParamScheduler(object):
             self.end_wd = self._check_and_set(self.end_wd,
                                                 sd['end_wd'],
                                                 "end weight decay")
-            args = get_args()
-            if args.tenplex:
-                self.wd_incr_steps = sd['wd_incr_steps']
-            else:
-                self.wd_incr_steps = self._check_and_set(self.wd_incr_steps,
-                                                    sd['wd_incr_steps'],
-                                                    "total number of weight decay iterations")
+            self.wd_incr_steps = sd['wd_incr_steps']
+            # self.wd_incr_steps = self._check_and_set(self.wd_incr_steps,
+            #                                     sd['wd_incr_steps'],
+            #                                     "total number of weight decay iterations")
             self.wd_incr_style = self._check_and_set(self.wd_incr_style,
                                                 sd['wd_incr_style'],
                                                 "weight decay incr style")
