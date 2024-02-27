@@ -702,7 +702,8 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
     print_datetime('before the start of training step')
     report_memory_flag = True
     while iteration < args.train_iters:
-        if args.tenplex and tenplex.check_stop(args.scheduler_addr):
+        # if args.tenplex and tenplex.check_stop(args.scheduler_addr):
+        if tenplex.check_stop(args.scheduler_addr):
             break
 
         update_num_microbatches(args.consumed_train_samples)
