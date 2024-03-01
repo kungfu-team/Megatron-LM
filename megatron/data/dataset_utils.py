@@ -572,7 +572,7 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
                 if args.tenplex:
                     args = get_args()
                     dp_rank = mpu.get_data_parallel_rank()
-                    dataset = TenplexBertDataset(args.mlfs_path, dp_rank)
+                    dataset = TenplexBertDataset(args.mlfs_path, args.jobid, dp_rank)
                 else:
                     dataset = BertDataset(
                         indexed_dataset=indexed_dataset,

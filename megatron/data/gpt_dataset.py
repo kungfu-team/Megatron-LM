@@ -125,7 +125,7 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
     args = get_args()
     if args.tenplex:
         dp_rank = mpu.get_data_parallel_rank()
-        dataset = TenplexGPTDataset(args.mlfs_path, dp_rank)
+        dataset = TenplexGPTDataset(args.mlfs_path, args.jobid, dp_rank)
         return dataset, None, None
 
     # Indexed dataset.
