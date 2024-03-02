@@ -954,6 +954,10 @@ def build_train_valid_test_data_loaders(
         train_ds, valid_ds, test_ds = build_train_valid_test_datasets(
             build_train_valid_test_datasets_provider)
 
+        # Tenplex
+        if args.tenplex:
+            args.consumed_train_samples = 0
+
         # Build dataloders.
         train_dataloader = build_pretraining_data_loader(
             train_ds, args.consumed_train_samples)
