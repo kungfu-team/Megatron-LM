@@ -567,10 +567,14 @@ def load_checkpoint(model, optimizer, opt_param_scheduler, load_arg='load', stri
     assert args.consumed_valid_samples == 0
     if 'args' in state_dict and not args.finetune:
         checkpoint_args = state_dict['args']
+        # Tenplex
         if not args.tenplex:
             check_checkpoint_args(checkpoint_args)
-        args.consumed_train_samples = getattr(checkpoint_args,
-                                              'consumed_train_samples', 0)
+        if args.tenplex:
+            args.consumed_train_samples = 0
+        else:
+            args.consumed_train_samples = getattr(checkpoint_args,
+                                                  'consumed_train_samples', 0)
         update_num_microbatches(consumed_samples=args.consumed_train_samples)
         args.consumed_valid_samples = getattr(checkpoint_args,
                                               'consumed_valid_samples', 0)
