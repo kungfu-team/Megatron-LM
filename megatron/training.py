@@ -702,7 +702,6 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
     print_datetime('before the start of training step')
     report_memory_flag = True
     while iteration < args.train_iters:
-        # if args.tenplex and tenplex.check_stop(args.scheduler_addr):
         if tenplex.check_stop(args.scheduler_addr):
             break
 
@@ -954,9 +953,14 @@ def build_train_valid_test_data_loaders(
         train_ds, valid_ds, test_ds = build_train_valid_test_datasets(
             build_train_valid_test_datasets_provider)
 
+        # Tenplex
+        consumed_train_samples = args.consumed_train_samples
+        if args.tenplex:
+            consumed_train_samples = 0
+
         # Build dataloders.
         train_dataloader = build_pretraining_data_loader(
-            train_ds, args.consumed_train_samples)
+            train_ds, consumed_train_samples)
         valid_dataloader = build_pretraining_data_loader(
             valid_ds, args.consumed_valid_samples)
         test_dataloader = build_pretraining_data_loader(test_ds, 0)
