@@ -212,6 +212,7 @@ class OptimizerParamScheduler(object):
                                                 sd['end_wd'],
                                                 "end weight decay")
             self.wd_incr_steps = sd['wd_incr_steps']
+            # Tenplex
             # self.wd_incr_steps = self._check_and_set(self.wd_incr_steps,
             #                                     sd['wd_incr_steps'],
             #                                     "total number of weight decay iterations")

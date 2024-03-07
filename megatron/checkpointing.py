@@ -1,6 +1,6 @@
 # Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
 
-"""Input/output checkpointing."""
+"""Inpcheck_checkpoint_argsut/output checkpointing."""
 
 import os
 import random
@@ -65,6 +65,11 @@ def check_checkpoint_args(checkpoint_args):
         _compare('tokenizer_type')
     if args.data_parallel_random_init:
         _compare('data_parallel_random_init')
+
+    # Tenplex
+    if args.tenplex:
+        return
+
     if get_checkpoint_version() < 3.0:
         _compare('tensor_model_parallel_size',
                  old_arg_name='model_parallel_size')
@@ -371,6 +376,7 @@ def _load_base_checkpoint(load_dir, rank0=False):
     If rank0 is true, just loads rank 0 checkpoint, ignoring arguments.
     """
 
+    # Tenplex
     args = get_args()
     if args.tenplex:
         device_rank = torch.distributed.get_rank()
@@ -567,9 +573,7 @@ def load_checkpoint(model, optimizer, opt_param_scheduler, load_arg='load', stri
     assert args.consumed_valid_samples == 0
     if 'args' in state_dict and not args.finetune:
         checkpoint_args = state_dict['args']
-        # Tenplex
-        if not args.tenplex:
-            check_checkpoint_args(checkpoint_args)
+        check_checkpoint_args(checkpoint_args)
         args.consumed_train_samples = getattr(checkpoint_args,
                                               'consumed_train_samples', 0)
         update_num_microbatches(consumed_samples=args.consumed_train_samples)
