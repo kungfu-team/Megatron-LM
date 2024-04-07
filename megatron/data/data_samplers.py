@@ -83,15 +83,14 @@ class MegatronPretrainingSampler:
         # Last batch will be dropped if drop_last is not set False
         for idx in range(self.consumed_samples, self.total_samples):
             batch.append(idx)
-            if len(batch) == self.micro_batch_times_data_parallel_size:
-                start_idx, end_idx = self.get_start_end_idx()
-                yield batch[start_idx:end_idx]
+            # MLFS takes care of the sharding
+            if len(batch) == self.micro_batch_size:
+                yield batch
                 batch = []
 
         # Check the last partial batch and see drop_last is set
         if len(batch) > 0 and not self.drop_last:
-            start_idx, end_idx = self.get_start_end_idx()
-            yield batch[start_idx:end_idx]
+            yield batch
 
 
 class RandomSeedDataset(Dataset):
