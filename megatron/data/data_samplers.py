@@ -88,7 +88,6 @@ class MegatronPretrainingSampler:
         # Tenplex
         if self.use_tenplex:
             self.iter_tenplex()
-            return
 
         batch = []
         # Last batch will be dropped if drop_last is not set False

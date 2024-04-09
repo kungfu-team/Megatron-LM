@@ -492,6 +492,13 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
     if dataset_type not in DSET_TYPES:
         raise ValueError("Invalid dataset_type: ", dataset_type)
 
+    # Tenplex
+    args = get_args()
+    if args.tenplex:
+        dp_rank = mpu.get_data_parallel_rank()
+        dataset = TenplexBertDataset(args.mlfs_path, args.jobid, dp_rank)
+        return (dataset, dataset, dataset)
+
     # Indexed dataset.
     indexed_dataset = get_indexed_dataset_(data_prefix,
                                            data_impl,
@@ -569,18 +576,13 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
                     **kwargs
                 )
             elif dataset_type == DSET_TYPE_BERT:
-                if args.tenplex:
-                    args = get_args()
-                    dp_rank = mpu.get_data_parallel_rank()
-                    dataset = TenplexBertDataset(args.mlfs_path, args.jobid, dp_rank)
-                else:
-                    dataset = BertDataset(
-                        indexed_dataset=indexed_dataset,
-                        masked_lm_prob=masked_lm_prob,
-                        short_seq_prob=short_seq_prob,
-                        binary_head=binary_head,
-                        **kwargs
-                    )
+                dataset = BertDataset(
+                    indexed_dataset=indexed_dataset,
+                    masked_lm_prob=masked_lm_prob,
+                    short_seq_prob=short_seq_prob,
+                    binary_head=binary_head,
+                    **kwargs
+                )
             else:
                 raise NotImplementedError("Dataset type not fully implemented.")
 
