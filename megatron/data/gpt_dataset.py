@@ -158,7 +158,8 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
                                  train_valid_test_num_samples[index],
                                  seq_length, seed,
                                  return_doc_ids,
-                                 data_cache_path=data_cache_path)
+                                 data_cache_path=data_cache_path,
+                                 do_shuffle=False)
         return dataset
 
     train_dataset = build_dataset(0, 'train')
@@ -254,11 +255,12 @@ class GPTDataset(torch.utils.data.Dataset):
     def __init__(self, name, data_prefix, documents, indexed_dataset,
                  splits_string, num_samples, seq_length, seed,
                  return_doc_ids=False, *,
-                 data_cache_path=None):
+                 data_cache_path=None, do_shuffle=True):
 
         self.name = name
         self.indexed_dataset = indexed_dataset
         self.return_doc_ids = return_doc_ids
+        self.do_shuffle = do_shuffle
 
         # Checks
         assert np.min(documents) >= 0
@@ -278,8 +280,9 @@ class GPTDataset(torch.utils.data.Dataset):
         return self.sample_idx.shape[0] - 1
 
     def __getitem__(self, idx):
-        # Get the shuffled index.
-        idx = self.shuffle_idx[idx]
+        if self.do_shuffle:
+            # Get the shuffled index.
+            idx = self.shuffle_idx[idx]
         # Start and end documents and offsets.
         doc_index_f = self.sample_idx[idx][0]
         doc_index_l = self.sample_idx[idx + 1][0]
