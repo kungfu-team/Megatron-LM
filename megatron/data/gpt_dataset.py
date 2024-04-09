@@ -159,7 +159,7 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
                                  seq_length, seed,
                                  return_doc_ids,
                                  data_cache_path=data_cache_path,
-                                 do_shuffle=False)
+                                 do_shuffle=True)
         return dataset
 
     train_dataset = build_dataset(0, 'train')

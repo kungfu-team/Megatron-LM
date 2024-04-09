@@ -18,6 +18,9 @@ def build_pretraining_data_loader(dataset, consumed_samples):
         return None
     args = get_args()
 
+    # Marcel
+    print(f"data loader type {args.dataloader_type}")
+
     # Megatron sampler
     if args.dataloader_type == 'single':
         batch_sampler = MegatronPretrainingSampler(
