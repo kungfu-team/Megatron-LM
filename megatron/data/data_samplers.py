@@ -25,7 +25,8 @@ def build_pretraining_data_loader(dataset, consumed_samples):
             consumed_samples=consumed_samples,
             micro_batch_size=args.micro_batch_size,
             data_parallel_rank=mpu.get_data_parallel_rank(),
-            data_parallel_size=mpu.get_data_parallel_world_size())
+            data_parallel_size=mpu.get_data_parallel_world_size(),
+            use_tenplex=args.tenplex)
     elif args.dataloader_type == 'cyclic':
         batch_sampler = MegatronPretrainingRandomSampler(
             dataset,
@@ -48,7 +49,8 @@ def build_pretraining_data_loader(dataset, consumed_samples):
 class MegatronPretrainingSampler:
 
     def __init__(self, total_samples, consumed_samples, micro_batch_size,
-                 data_parallel_rank, data_parallel_size, drop_last=True):
+                 data_parallel_rank, data_parallel_size, drop_last=True,
+                 use_tenplex=False):
         # Keep a copy of input params for later use.
         self.total_samples = total_samples
         self.consumed_samples = consumed_samples
@@ -57,6 +59,7 @@ class MegatronPretrainingSampler:
         self.micro_batch_times_data_parallel_size = \
             self.micro_batch_size * data_parallel_size
         self.drop_last = drop_last
+        self.use_tenplex = use_tenplex
 
         # Sanity checks.
         assert self.total_samples > 0, \
@@ -79,6 +82,26 @@ class MegatronPretrainingSampler:
         return start_idx, end_idx
 
     def __iter__(self):
+        # Tenplex
+        if self.use_tenplex:
+            self.iter_tenplex()
+            return
+
+        batch = []
+        # Last batch will be dropped if drop_last is not set False
+        for idx in range(self.consumed_samples, self.total_samples):
+            batch.append(idx)
+            if len(batch) == self.micro_batch_times_data_parallel_size:
+                start_idx, end_idx = self.get_start_end_idx()
+                yield batch[start_idx:end_idx]
+                batch = []
+
+        # Check the last partial batch and see drop_last is set
+        if len(batch) > 0 and not self.drop_last:
+            start_idx, end_idx = self.get_start_end_idx()
+            yield batch[start_idx:end_idx]
+
+    def iter_tenplex(self):
         batch = []
         # Last batch will be dropped if drop_last is not set False
         for idx in range(self.consumed_samples, self.total_samples):
