@@ -1,2 +1,33 @@
 #!/bin/sh
+
 set -e
+
+join_() {
+    local IFS=$1
+    shift
+    echo "$*"
+}
+
+join() { join_ , $@; }
+
+gpus() {
+    echo 0
+    echo 1
+}
+
+docker_run_flags() {
+    echo --rm
+    echo --gpus
+    echo "\"device=$(join $(gpus))\""
+    echo -i
+
+    echo --name $(cat name.txt)
+}
+
+docker_run() { docker run $(docker_run_flags) -t $(cat tag.txt) $@; }
+
+if [ -z "$1" ]; then
+    docker_run bash
+else
+    docker_run $@
+fi
