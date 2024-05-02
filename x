@@ -5,6 +5,7 @@ if [ -f /.dockerenv ]; then
     ./lg/docker-main.sh
 else
     ./Dockerfile
+    ./lg/linux-main.sh
     # ./lg/bert.sh
     # ./lg/gpt.sh
 fi
