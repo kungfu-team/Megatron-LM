@@ -14,15 +14,17 @@ void show_cuda_rt()
     cudaError_t ret = cudaRuntimeGetVersion(&runtimeVersion);
     CHECK(ret);
     printf("%d\n", runtimeVersion);
-    int major = runtimeVersion / 1000;
-    int minor = runtimeVersion % 1000 / 10;
-    printf("%d.%d\n", major, minor);
+    const int major = runtimeVersion / 1000;
+    const int mp = runtimeVersion % 1000;
+    const int minor = mp / 10;
+    const int patch = mp % 10;
+    printf("%d.%d.%d\n", major, minor, patch);
 }
 
 int main()
 {
     // https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html#group__CUDART__DEVICE
-    cudaInitDevice(0, 0, 0);
+    // cudaInitDevice(0, 0, 0);
     show_cuda_rt();
     return 0;
 }
