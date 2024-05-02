@@ -22,6 +22,8 @@ docker_run_flags() {
     echo -i
 
     echo --name $(cat name.txt)
+
+    echo -v /data:/data
 }
 
 docker_run() { docker run $(docker_run_flags) -t $(cat tag.txt) $@; }

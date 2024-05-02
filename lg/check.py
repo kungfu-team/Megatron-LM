@@ -3,3 +3,4 @@ import pyramid
 
 
 # print(pyramid.__version__)
+import pyramid.session
