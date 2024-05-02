@@ -1,0 +1,4 @@
+#!/usr/bin/env -S sh -c 'python3 -m pip install -U -r $0'
+
+
+pyramid

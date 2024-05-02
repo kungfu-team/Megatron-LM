@@ -6,9 +6,9 @@ cd $(dirname $0)
 
 export CUDA_DEVICE_MAX_CONNECTIONS=1
 
-# CHECKPOINT_PATH=<Specify path>
-# VOCAB_FILE=<Specify path to file>/bert-vocab.txt
-# DATA_PATH=<Specify path and file prefix>_text_sentence
+CHECKPOINT_PATH=$HOME/var/ckpt/bert
+VOCAB_FILE=/data/megatron-lm/bert/bert-large-uncased-vocab.txt
+DATA_PATH=/data/megatron-lm/bert/enwiki/bert_text_sentence
 
 bert_flags() {
     echo --num-layers 24
@@ -47,10 +47,12 @@ flags() {
     bert_flags
     data_flags
     output_flags
-    --save $CHECKPOINT_PATH
-    --load $CHECKPOINT_PATH
+    echo --save $CHECKPOINT_PATH
+    echo --load $CHECKPOINT_PATH
 }
 
-torchrun pretrain_bert.py $(flags)
+# mkdir -p $CHECKPOINT_PATH
+
+torchrun ../pretrain_bert.py $(flags)
 
 echo "done $0"

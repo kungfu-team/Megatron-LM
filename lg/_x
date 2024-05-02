@@ -1,0 +1,9 @@
+#!/bin/sh
+
+x() {
+    echo "BGN $@"
+    $@
+    echo "END $@"
+    echo
+    echo
+}

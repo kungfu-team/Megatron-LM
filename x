@@ -4,7 +4,7 @@ set -e
 if [ -f /.dockerenv ]; then
     ./lg/docker-main.sh
 else
-    ./Dockerfile
+    # ./Dockerfile
     ./lg/linux-main.sh
     # ./lg/bert.sh
     # ./lg/gpt.sh
