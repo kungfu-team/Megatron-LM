@@ -14,6 +14,9 @@ void show_cuda_rt()
     cudaError_t ret = cudaRuntimeGetVersion(&runtimeVersion);
     CHECK(ret);
     printf("%d\n", runtimeVersion);
+    int major = runtimeVersion / 1000;
+    int minor = runtimeVersion % 1000 / 10;
+    printf("%d.%d\n", major, minor);
 }
 
 int main()
