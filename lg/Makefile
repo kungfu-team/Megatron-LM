@@ -5,6 +5,7 @@ NVCC=$(CUDA_HOME)/bin/nvcc
 all: \
 	check-cuda-driver \
 	check-cuda-rt \
+	gen-torch-requirements \
 	check
 
 check-cuda-driver:
@@ -12,6 +13,9 @@ check-cuda-driver:
 
 check-cuda-rt:
 	$(NVCC) check-cuda-rt.c -L $(CUDA_HOME)/lib64 -lcudart -o check-cuda-rt.out
+
+gen-torch-requirements:
+	$(NVCC) gen-torch-requirements.c -L $(CUDA_HOME)/lib64 -lcudart -o gen-torch-requirements.out
 
 check:
 	./check-cuda-driver.out
