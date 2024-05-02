@@ -1,4 +1,6 @@
-NVCC=/usr/local/cuda/bin/nvcc
+CUDA_HOME=/usr/local/cuda
+
+NVCC=$(CUDA_HOME)/bin/nvcc
 
 main:
-	$(NVCC) check.c -L /usr/local/cuda/lib64 -lcuda
+	$(NVCC) check.c -L $(CUDA_HOME)/lib64 -lcuda
