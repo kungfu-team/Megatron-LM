@@ -10,17 +10,9 @@ void check_result(CUresult result)
     }
 }
 
-int main()
+void show_cuda_cap(int device)
 {
     CUresult result;
-
-    int flags = 0;
-    // https://docs.nvidia.com/cuda/cuda-driver-api/group__CUDA__INITIALIZE.html#group__CUDA__INITIALIZE
-    result = cuInit(flags);
-    check_result(result);
-
-    int device = 0;
-
     int comp_cap_major = 0;
     int comp_cap_minor = 0;
     result = cuDeviceGetAttribute(
@@ -32,6 +24,19 @@ int main()
     check_result(result);
 
     printf("%d.%d\n", comp_cap_major, comp_cap_minor);
+}
+
+int main()
+{
+    CUresult result;
+
+    int flags = 0;
+    // https://docs.nvidia.com/cuda/cuda-driver-api/group__CUDA__INITIALIZE.html#group__CUDA__INITIALIZE
+    result = cuInit(flags);
+    check_result(result);
+
+    int device = 0;
+    show_cuda_cap(device);
     return 0;
 }
 
