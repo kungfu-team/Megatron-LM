@@ -1,4 +1,5 @@
 #!/usr/bin/env -S sh -c 'python3 -m pip install -U -r $0'
-
-
-pyramid
+# pyramid
+torch==2.1.1+cu118
+torchaudio==2.1.1+cu118
+torchvision==0.16.1+cu118
