@@ -6,9 +6,11 @@ cd $(dirname $0)
 . ./_x
 
 x ./check.py
-exit
+# exit
 
 x ./requirements.txt
+x ./requirements.torch.txt
+exit
 
 x ./bert.sh
 
