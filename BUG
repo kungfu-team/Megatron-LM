@@ -1,1 +1,39 @@
 ImportError: cannot import name 'UnencryptedCookieSessionFactoryConfig' from 'pyramid.session' (unknown location)
+
+
+Loading extension module scaled_softmax_cuda...
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/src/lg/../pretrain_bert.py", line 134, in <module>
+[rank0]:     pretrain(train_valid_test_datasets_provider, model_provider,
+[rank0]:   File "/src/megatron/training.py", line 89, in pretrain
+[rank0]:     initialize_megatron(extra_args_provider=extra_args_provider,
+[rank0]:   File "/src/megatron/initialize.py", line 82, in initialize_megatron
+[rank0]:     _compile_dependencies()
+[rank0]:   File "/src/megatron/initialize.py", line 131, in _compile_dependencies
+[rank0]:     torch.distributed.barrier()
+[rank0]:   File "/usr/local/lib/python3.10/dist-packages/torch/distributed/c10d_logger.py", line 75, in wrapper
+[rank0]:     return func(*args, **kwargs)
+[rank0]:   File "/usr/local/lib/python3.10/dist-packages/torch/distributed/distributed_c10d.py", line 3659, in barrier
+[rank0]:     work = default_pg.barrier(opts=opts)
+[rank0]: RuntimeError: CUDA error: out of memory
+[rank0]: CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+[rank0]: For debugging consider passing CUDA_LAUNCH_BLOCKING=1.
+[rank0]: Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+E0502 16:28:08.614000 140705607061952 torch/distributed/elastic/multiprocessing/api.py:881] failed (exitcode: 1) local_rank: 0 (pid: 451) of binary: /usr/bin/python
+Traceback (most recent call last):
+  File "/usr/local/bin/torchrun", line 8, in <module>
+    sys.exit(main())
+  File "/usr/local/lib/python3.10/dist-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 347, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/torch/distributed/run.py", line 879, in main
+    run(args)
+  File "/usr/local/lib/python3.10/dist-packages/torch/distributed/run.py", line 870, in run
+    elastic_launch(
+  File "/usr/local/lib/python3.10/dist-packages/torch/distributed/launcher/api.py", line 132, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/usr/local/lib/python3.10/dist-packages/torch/distributed/launcher/api.py", line 263, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError:
+============================================================
+../pretrain_bert.py FAILED
