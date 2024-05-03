@@ -1,8 +1,10 @@
 #!/bin/sh
 
+. ./measure.sh
+
 x() {
     echo "BGN $@"
-    $@
+    measure $@
     echo "END $@"
     echo
     echo

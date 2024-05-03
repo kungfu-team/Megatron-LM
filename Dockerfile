@@ -9,3 +9,5 @@ FROM kungfu.azurecr.io/mw-megatron-lm-23.06-update:latest
 
 WORKDIR /src
 ADD . .
+
+ENV PYTHONPATH=/src

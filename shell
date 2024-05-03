@@ -28,8 +28,13 @@ docker_run_flags() {
 
 docker_run() { docker run $(docker_run_flags) -t $(cat tag.txt) $@; }
 
-if [ -z "$1" ]; then
-    docker_run bash
-else
-    docker_run $@
-fi
+main() {
+    if [ -z "$1" ]; then
+        docker_run bash
+    else
+        docker_run $@
+    fi
+}
+
+./Dockerfile
+main $@
