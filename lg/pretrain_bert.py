@@ -141,5 +141,9 @@ def pa(title, args):
     pass
 
 
-arguments._print_args = pa
+def setup():
+    arguments._print_args = pa
+
+
+setup()
 main()

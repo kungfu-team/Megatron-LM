@@ -7,4 +7,4 @@ def END(name):
 
 
 def ptrace(name):
-    print('%s' % (name))
+    print('[T] %s' % (name))
