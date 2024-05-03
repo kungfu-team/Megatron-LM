@@ -19,7 +19,7 @@ docker_run_flags() {
     echo --rm
     echo --gpus
     echo "\"device=$(join $(gpus))\""
-    echo -i
+    # echo -i
 
     echo --name $(cat name.txt)
 

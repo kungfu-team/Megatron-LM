@@ -1,0 +1,141 @@
+
+==========
+== CUDA ==
+==========
+
+CUDA Version 11.8.0
+
+Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+BGN ./bert.sh
+[begin] docker-main.sh $ ./bert.sh at 1714732440
+using world size: 1, data-parallel-size: 1, tensor-model-parallel size: 1, pipeline-model-parallel size: 1 
+using torch.float16 for parameters ...
+# arguments
+setting number of micro-batches to constant 2
+> building BertWordPieceLowerCase tokenizer ...
+ > padded vocab (size: 30524) with 68 dummy tokens (new size: 30592)
+> initializing torch distributed ...
+> initialized tensor model parallel with size 1
+> initialized pipeline model parallel with size 1
+> setting random seeds to 1234 ...
+> compiling dataset index builder ...
+make: Entering directory '/src/megatron/data'
+g++ -O3 -Wall -shared -std=c++11 -fPIC -fdiagnostics-color -I/usr/include/python3.10 -I/usr/local/lib/python3.10/dist-packages/pybind11/include helpers.cpp -o helpers.cpython-310-x86_64-linux-gnu.so
+make: Leaving directory '/src/megatron/data'
+>>> done with dataset index builder. Compilation time: 5.138 seconds
+> compiling and loading fused kernels ...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /src/megatron/fused_kernels/build/build.ninja...
+Building extension module scaled_upper_triang_masked_softmax_cuda...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+[1/3] c++ -MMD -MF scaled_upper_triang_masked_softmax.o.d -DTORCH_EXTENSION_NAME=scaled_upper_triang_masked_softmax_cuda -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1011\" -isystem /usr/local/lib/python3.10/dist-packages/torch/include -isystem /usr/local/lib/python3.10/dist-packages/torch/include/torch/csrc/api/include -isystem /usr/local/lib/python3.10/dist-packages/torch/include/TH -isystem /usr/local/lib/python3.10/dist-packages/torch/include/THC -isystem /usr/local/cuda/include -isystem /usr/include/python3.10 -D_GLIBCXX_USE_CXX11_ABI=0 -fPIC -std=c++17 -O3 -c /src/megatron/fused_kernels/scaled_upper_triang_masked_softmax.cpp -o scaled_upper_triang_masked_softmax.o 
+[2/3] /usr/local/cuda/bin/nvcc  -DTORCH_EXTENSION_NAME=scaled_upper_triang_masked_softmax_cuda -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1011\" -isystem /usr/local/lib/python3.10/dist-packages/torch/include -isystem /usr/local/lib/python3.10/dist-packages/torch/include/torch/csrc/api/include -isystem /usr/local/lib/python3.10/dist-packages/torch/include/TH -isystem /usr/local/lib/python3.10/dist-packages/torch/include/THC -isystem /usr/local/cuda/include -isystem /usr/include/python3.10 -D_GLIBCXX_USE_CXX11_ABI=0 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -O3 -gencode arch=compute_70,code=sm_70 --use_fast_math -U__CUDA_NO_HALF_OPERATORS__ -U__CUDA_NO_HALF_CONVERSIONS__ --expt-relaxed-constexpr --expt-extended-lambda -gencode arch=compute_80,code=sm_80 -gencode arch=compute_90,code=sm_90 -std=c++17 -c /src/megatron/fused_kernels/scaled_upper_triang_masked_softmax_cuda.cu -o scaled_upper_triang_masked_softmax_cuda.cuda.o 
+[3/3] c++ scaled_upper_triang_masked_softmax.o scaled_upper_triang_masked_softmax_cuda.cuda.o -shared -L/usr/local/lib/python3.10/dist-packages/torch/lib -lc10 -lc10_cuda -ltorch_cpu -ltorch_cuda -ltorch -ltorch_python -L/usr/local/cuda/lib64 -lcudart -o scaled_upper_triang_masked_softmax_cuda.so
+Loading extension module scaled_upper_triang_masked_softmax_cuda...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /src/megatron/fused_kernels/build/build.ninja...
+Building extension module scaled_masked_softmax_cuda...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+[1/3] c++ -MMD -MF scaled_masked_softmax.o.d -DTORCH_EXTENSION_NAME=scaled_masked_softmax_cuda -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1011\" -isystem /usr/local/lib/python3.10/dist-packages/torch/include -isystem /usr/local/lib/python3.10/dist-packages/torch/include/torch/csrc/api/include -isystem /usr/local/lib/python3.10/dist-packages/torch/include/TH -isystem /usr/local/lib/python3.10/dist-packages/torch/include/THC -isystem /usr/local/cuda/include -isystem /usr/include/python3.10 -D_GLIBCXX_USE_CXX11_ABI=0 -fPIC -std=c++17 -O3 -c /src/megatron/fused_kernels/scaled_masked_softmax.cpp -o scaled_masked_softmax.o 
+[2/3] /usr/local/cuda/bin/nvcc  -DTORCH_EXTENSION_NAME=scaled_masked_softmax_cuda -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1011\" -isystem /usr/local/lib/python3.10/dist-packages/torch/include -isystem /usr/local/lib/python3.10/dist-packages/torch/include/torch/csrc/api/include -isystem /usr/local/lib/python3.10/dist-packages/torch/include/TH -isystem /usr/local/lib/python3.10/dist-packages/torch/include/THC -isystem /usr/local/cuda/include -isystem /usr/include/python3.10 -D_GLIBCXX_USE_CXX11_ABI=0 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -O3 -gencode arch=compute_70,code=sm_70 --use_fast_math -U__CUDA_NO_HALF_OPERATORS__ -U__CUDA_NO_HALF_CONVERSIONS__ --expt-relaxed-constexpr --expt-extended-lambda -gencode arch=compute_80,code=sm_80 -gencode arch=compute_90,code=sm_90 -std=c++17 -c /src/megatron/fused_kernels/scaled_masked_softmax_cuda.cu -o scaled_masked_softmax_cuda.cuda.o 
+[3/3] c++ scaled_masked_softmax.o scaled_masked_softmax_cuda.cuda.o -shared -L/usr/local/lib/python3.10/dist-packages/torch/lib -lc10 -lc10_cuda -ltorch_cpu -ltorch_cuda -ltorch -ltorch_python -L/usr/local/cuda/lib64 -lcudart -o scaled_masked_softmax_cuda.so
+Loading extension module scaled_masked_softmax_cuda...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /src/megatron/fused_kernels/build/build.ninja...
+Building extension module scaled_softmax_cuda...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+[1/3] c++ -MMD -MF scaled_softmax.o.d -DTORCH_EXTENSION_NAME=scaled_softmax_cuda -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1011\" -isystem /usr/local/lib/python3.10/dist-packages/torch/include -isystem /usr/local/lib/python3.10/dist-packages/torch/include/torch/csrc/api/include -isystem /usr/local/lib/python3.10/dist-packages/torch/include/TH -isystem /usr/local/lib/python3.10/dist-packages/torch/include/THC -isystem /usr/local/cuda/include -isystem /usr/include/python3.10 -D_GLIBCXX_USE_CXX11_ABI=0 -fPIC -std=c++17 -O3 -c /src/megatron/fused_kernels/scaled_softmax.cpp -o scaled_softmax.o 
+[2/3] /usr/local/cuda/bin/nvcc  -DTORCH_EXTENSION_NAME=scaled_softmax_cuda -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1011\" -isystem /usr/local/lib/python3.10/dist-packages/torch/include -isystem /usr/local/lib/python3.10/dist-packages/torch/include/torch/csrc/api/include -isystem /usr/local/lib/python3.10/dist-packages/torch/include/TH -isystem /usr/local/lib/python3.10/dist-packages/torch/include/THC -isystem /usr/local/cuda/include -isystem /usr/include/python3.10 -D_GLIBCXX_USE_CXX11_ABI=0 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -O3 -gencode arch=compute_70,code=sm_70 --use_fast_math -U__CUDA_NO_HALF_OPERATORS__ -U__CUDA_NO_HALF_CONVERSIONS__ --expt-relaxed-constexpr --expt-extended-lambda -gencode arch=compute_80,code=sm_80 -gencode arch=compute_90,code=sm_90 -std=c++17 -c /src/megatron/fused_kernels/scaled_softmax_cuda.cu -o scaled_softmax_cuda.cuda.o 
+[3/3] c++ scaled_softmax.o scaled_softmax_cuda.cuda.o -shared -L/usr/local/lib/python3.10/dist-packages/torch/lib -lc10 -lc10_cuda -ltorch_cpu -ltorch_cuda -ltorch -ltorch_python -L/usr/local/cuda/lib64 -lcudart -o scaled_softmax_cuda.so
+Loading extension module scaled_softmax_cuda...
+>>> done with compiling and loading fused kernels. Compilation time: 519.344 seconds
+/src/megatron/initialize.py:277: UserWarning: nvfuser integration in TorchScript is deprecated. (Triggered internally at ../torch/csrc/jit/codegen/cuda/interface.cpp:235.)
+  output = bias_gelu(bias, input)
+/src/megatron/training.py:98: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:83.)
+  start_time_tensor = torch.cuda.DoubleTensor([_TRAIN_START_TIME])
+time to initialize megatron (seconds): 526.208
+[after megatron is initialized] datetime: 2024-05-03 10:42:50 
+building BERT model ...
+ > number of parameters on (tensor, pipeline) model parallel rank (0, 0): 336297858
+> learning rate decay style: linear
+WARNING: could not find the metadata file /root/var/ckpt/bert/latest_checkpointed_iteration.txt 
+    will not load any checkpoints and will start from random
+(min, max) time across ranks (ms):
+    load-checkpoint ................................: (0.14, 0.14)
+[after model, optimizer, and learning rate scheduler are built] datetime: 2024-05-03 10:42:50 
+> building train, validation, and test datasets ...
+ > datasets target sizes (minimum size):
+    train:      800
+    validation: 80
+    test:       80
+[T] train_valid_test_datasets_provider
+> building train, validation, and test datasets for BERT ...
+ > building dataset index ...
+    reading sizes...
+    reading pointers...
+    reading document index...
+    creating numpy buffer of mmap...
+    creating memory view of numpy buffer...
+ > finished creating indexed dataset in 0.000732 seconds
+ > indexed dataset stats:
+    number of documents: 15722811
+    number of sentences: 123492135
+ > dataset split:
+    train:
+     document indices in [0, 14920947) total of 14920947 documents
+     sentence indices in [0, 119715258) total of 119715258 sentences
+    validation:
+     document indices in [14920947, 15707088) total of 786141 documents
+     sentence indices in [119715258, 123431470) total of 3716212 sentences
+    test:
+     document indices in [15707088, 15722811) total of 15723 documents
+     sentence indices in [123431470, 123492135) total of 60665 sentences
+ > loading indexed mapping from /data/megatron-lm/bert/enwiki/bert_text_sentence_train_indexmap_800mns_509msl_0.10ssp_1234s.npy
+    loaded indexed file in 0.000 seconds
+    total number of samples: 9231120
+ > loading indexed mapping from /data/megatron-lm/bert/enwiki/bert_text_sentence_valid_indexmap_80mns_509msl_0.10ssp_1234s.npy
+    loaded indexed file in 0.000 seconds
+    total number of samples: 336184
+ > loading indexed mapping from /data/megatron-lm/bert/enwiki/bert_text_sentence_test_indexmap_80mns_509msl_0.10ssp_1234s.npy
+    loaded indexed file in 0.000 seconds
+    total number of samples: 5717
+> finished creating BERT datasets ...
+[after dataloaders are built] datetime: 2024-05-03 10:42:50 
+done with setup ...
+(min, max) time across ranks (ms):
+    model-and-optimizer-setup ......................: (132.23, 132.23)
+    train/valid/test-data-iterators-setup ..........: (292.15, 292.15)
+training ...
+[before the start of training step] datetime: 2024-05-03 10:42:50 
+ iteration       10/     100 | consumed samples:           80 | elapsed time per iteration (ms): 306.3 | learning rate: 0.000E+00 | global batch size:     8 | loss scale: 8388608.0 | number of skipped iterations:  10 | number of nan iterations:   0 |
+ iteration       20/     100 | consumed samples:          160 | elapsed time per iteration (ms): 236.5 | learning rate: 3.030E-08 | global batch size:     8 | lm loss: 1.053384E+01 | sop loss: 7.019524E-01 | loss scale: 65536.0 | grad norm: 71.215 | number of skipped iterations:   7 | number of nan iterations:   0 |
+[Rank 0] (after 20 iterations) memory (MB) | allocated: 6464.9443359375 | max allocated: 9358.0380859375 | reserved: 9592.0 | max reserved: 9592.0
+ iteration       30/     100 | consumed samples:          240 | elapsed time per iteration (ms): 242.1 | learning rate: 1.313E-07 | global batch size:     8 | lm loss: 1.053076E+01 | sop loss: 7.288815E-01 | loss scale: 65536.0 | grad norm: 65.855 | number of skipped iterations:   0 | number of nan iterations:   0 |
+ iteration       40/     100 | consumed samples:          320 | elapsed time per iteration (ms): 239.4 | learning rate: 2.323E-07 | global batch size:     8 | lm loss: 1.042930E+01 | sop loss: 6.961259E-01 | loss scale: 65536.0 | grad norm: 77.996 | number of skipped iterations:   0 | number of nan iterations:   0 |
+ iteration       50/     100 | consumed samples:          400 | elapsed time per iteration (ms): 244.1 | learning rate: 3.333E-07 | global batch size:     8 | lm loss: 1.013998E+01 | sop loss: 6.930162E-01 | loss scale: 65536.0 | grad norm: 64.109 | number of skipped iterations:   0 | number of nan iterations:   0 |
+ iteration       60/     100 | consumed samples:          480 | elapsed time per iteration (ms): 244.2 | learning rate: 4.343E-07 | global batch size:     8 | lm loss: 9.866235E+00 | sop loss: 7.234773E-01 | loss scale: 65536.0 | grad norm: 114.539 | number of skipped iterations:   0 | number of nan iterations:   0 |
+ iteration       70/     100 | consumed samples:          560 | elapsed time per iteration (ms): 240.7 | learning rate: 5.354E-07 | global batch size:     8 | lm loss: 9.615359E+00 | sop loss: 7.634126E-01 | loss scale: 65536.0 | grad norm: 37.118 | number of skipped iterations:   0 | number of nan iterations:   0 |
+ iteration       80/     100 | consumed samples:          640 | elapsed time per iteration (ms): 241.6 | learning rate: 6.364E-07 | global batch size:     8 | lm loss: 9.540202E+00 | sop loss: 7.404765E-01 | loss scale: 65536.0 | grad norm: 44.709 | number of skipped iterations:   0 | number of nan iterations:   0 |
+ iteration       90/     100 | consumed samples:          720 | elapsed time per iteration (ms): 244.0 | learning rate: 7.374E-07 | global batch size:     8 | lm loss: 9.389886E+00 | sop loss: 7.640543E-01 | loss scale: 65536.0 | grad norm: 30.961 | number of skipped iterations:   0 | number of nan iterations:   0 |
+ iteration      100/     100 | consumed samples:          800 | elapsed time per iteration (ms): 235.9 | learning rate: 8.384E-07 | global batch size:     8 | lm loss: 9.291746E+00 | sop loss: 7.797469E-01 | loss scale: 65536.0 | grad norm: 64.356 | number of skipped iterations:   0 | number of nan iterations:   0 |
+[after training is done] datetime: 2024-05-03 10:43:15 
+saving checkpoint at iteration     100 to /root/var/ckpt/bert
+  successfully saved checkpoint at iteration     100 to /root/var/ckpt/bert
+Evaluating iter 10/10
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ validation loss at iteration 100 on 80-sample draw from validation set | lm loss value: 9.272037E+00 | lm loss PPL: 1.063639E+04 | sop loss value: 7.939767E-01 | sop loss PPL: 2.212176E+00 | 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Evaluating iter 10/10
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ validation loss at iteration 100 on 80-sample draw from test set | lm loss value: 9.175302E+00 | lm loss PPL: 9.655679E+03 | sop loss value: 7.841135E-01 | sop loss PPL: 2.190464E+00 | 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+done ./bert.sh
+tee: ./lg/profile.log: No such file or directory
+[done] docker-main.sh $ ./bert.sh took 9m27s
