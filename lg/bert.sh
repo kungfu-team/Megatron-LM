@@ -53,7 +53,7 @@ flags() {
 }
 
 main() {
-    torchrun ../pretrain_bert.py $(flags)
+    torchrun ./pretrain_bert.py $(flags)
 }
 
 main
