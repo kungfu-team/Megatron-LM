@@ -4,6 +4,7 @@ set -e
 if [ -f /.dockerenv ]; then
     ./lg/docker-main.sh
 else
+    ./lg/fix.sh
     ./shell ./x
     # ./Dockerfile
     # ./lg/linux-main.sh
