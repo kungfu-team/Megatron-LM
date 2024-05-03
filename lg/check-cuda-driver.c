@@ -1,4 +1,4 @@
-//  /usr/local/cuda/bin/nvcc check.c -L /usr/local/cuda/lib64 -lcuda
+//  /usr/local/cuda/bin/nvcc check-cuda-driver.c -L /usr/local/cuda/lib64 -lcuda
 
 #include <cuda.h>
 #include <stdio.h>
