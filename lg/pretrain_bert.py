@@ -9,6 +9,7 @@ from megatron.data.dataset_utils import build_train_valid_test_datasets
 from megatron.model import BertModel
 from megatron.training import pretrain
 from megatron.utils import average_losses_across_data_parallel_group
+from pytrace import ptrace
 
 
 def model_provider(pre_process=True, post_process=True):
@@ -104,6 +105,7 @@ def forward_step(data_iterator, model):
 
 def train_valid_test_datasets_provider(train_val_test_num_samples):
     """Build train, valid, and test datasets."""
+    ptrace('train_valid_test_datasets_provider')
     args = get_args()
 
     print_rank_0('> building train, validation, and test datasets '

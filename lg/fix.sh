@@ -8,3 +8,4 @@ py_fix() {
 }
 
 py_fix ./pretrain_bert.py
+py_fix ../pytrace/*.py
