@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import pyramid
+import pyramid # not needed by newer apex
 
 
 # print(pyramid.__version__)
