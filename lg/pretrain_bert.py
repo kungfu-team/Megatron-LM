@@ -9,7 +9,7 @@ from megatron.data.dataset_utils import build_train_valid_test_datasets
 from megatron.model import BertModel
 from megatron.training import pretrain
 from megatron.utils import average_losses_across_data_parallel_group
-from pytrace import ptrace
+from pytrace import ptrace, traced
 
 
 def model_provider(pre_process=True, post_process=True):
@@ -126,7 +126,14 @@ def train_valid_test_datasets_provider(train_val_test_num_samples):
     return train_ds, valid_ds, test_ds
 
 
+def f():
+    from pytrace import f
+    f()
+
+
 def main():
+    f()
+    return
     pretrain(
         train_valid_test_datasets_provider,
         model_provider,
@@ -142,7 +149,10 @@ def pa(title, args):
 
 
 def setup():
-    arguments._print_args = pa
+    # arguments._print_args = pa
+    import pytrace
+    pytrace.f = traced(pytrace.f)
+    pass
 
 
 setup()
