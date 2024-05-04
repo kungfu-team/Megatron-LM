@@ -9,3 +9,8 @@ py_fix() {
 
 py_fix ./pretrain_bert.py
 py_fix ../pytrace/*.py
+
+cd ..
+# mv ./log/dos2unix ./log/dos2unix.py
+py_fix ./log/dos2unix
+# mv ./log/dos2unix.py ./log/dos2unix
