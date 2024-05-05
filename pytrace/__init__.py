@@ -1,20 +1,20 @@
 def BGN(name):
-    print(name)
+    print('{ //' + name)
 
 
 def END(name):
-    print(name)
+    print('} //' + name)
 
 
 def f():
     print(1)
 
 
-def noop(*args, **kvargs):
+def noop(*_args, **_kvargs):
     pass
 
 
-class Context(object):
+class TraceScope(object):
 
     def __init__(self, name=''):
         self.name = name
@@ -36,7 +36,7 @@ def ptrace(name):
 def with_trace(f):
 
     def g(*args, **kvargs):
-        with Context(f.__name__):
+        with TraceScope(f.__name__):
             return f(*args, **kvargs)
 
     return g
