@@ -133,6 +133,7 @@ def train_valid_test_datasets_provider(train_val_test_num_samples):
     return train_ds, valid_ds, test_ds
 
 
+@traced
 def main():
     pretrain(
         train_valid_test_datasets_provider,

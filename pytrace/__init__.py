@@ -1,9 +1,33 @@
+class Context(object):
+
+    def __init__(self):
+        self.depth = 0
+
+    def bgn(self):
+        depth = self.depth
+        self.depth += 1
+        return depth
+
+    def end(self):
+        self.depth -= 1
+        return self.depth
+
+
+_ctx = Context()
+
+indent = ' ' * 4
+
+
 def BGN(name):
-    print('{ //' + name)
+    depth = _ctx.bgn()
+    tab = indent * depth
+    print(tab + '{ //' + name)
 
 
 def END(name):
-    print('} //' + name)
+    depth = _ctx.end()
+    tab = indent * depth
+    print(tab + '} //' + name)
 
 
 def f():
