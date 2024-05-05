@@ -149,7 +149,7 @@ def main():
 def isfile(f):
 
     def g(x):
-        print('%s(%s)' % ('isfile', x))
+        print('%s(%s)' % (f.__name__, x))
         return f(x)
 
     return g

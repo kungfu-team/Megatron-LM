@@ -7,8 +7,12 @@ bert-large-uncased-vocab.txt
 
 /data/megatron-lm/bert/bert-large-uncased-vocab.txt
 
-
+# 100
 isfile(/root/var/ckpt/bert/latest_checkpointed_iteration.txt)
 isfile(/data/megatron-lm/bert/enwiki/bert_text_sentence_train_indexmap_800mns_509msl_0.10ssp_1234s.npy)
 isfile(/data/megatron-lm/bert/enwiki/bert_text_sentence_valid_indexmap_80mns_509msl_0.10ssp_1234s.npy)
 isfile(/data/megatron-lm/bert/enwiki/bert_text_sentence_test_indexmap_80mns_509msl_0.10ssp_1234s.npy)
+
+# 50
+isfile(/root/var/ckpt/bert/latest_checkpointed_iteration.txt)
+isfile(/data/megatron-lm/bert/enwiki/bert_text_sentence_train_indexmap_400mns_509msl_0.10ssp_1234s.npy)
