@@ -12,6 +12,9 @@ main() {
     else
         measure ./lg/fix.sh
         measure ./a.py
+        measure ./samples-mapping.sh
+        git add -A
+        exit
         if [ $(uname) = "Linux" ]; then
             measure ./shell ./x
         fi

@@ -10,6 +10,7 @@ py_fix() {
 py_fix ./pretrain_bert.py
 py_fix ../pytrace/*.py
 py_fix ../a.py
+py_fix ../samples_mapping.py
 
 cd ..
 # mv ./log/dos2unix ./log/dos2unix.py
