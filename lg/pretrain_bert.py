@@ -63,13 +63,15 @@ def loss_func(loss_mask, sentence_order, output_tensor):
         lm_loss_.view(-1) * loss_mask.reshape(-1)) / loss_mask.sum()
 
     if sop_logits is not None:
-        sop_loss = F.cross_entropy(sop_logits.view(-1, 2).float(),
-                                   sentence_order.view(-1),
-                                   ignore_index=-1)
+        sop_loss = F.cross_entropy(
+            sop_logits.view(-1, 2).float(),
+            sentence_order.view(-1),
+            ignore_index=-1,
+        )
         sop_loss = sop_loss.float()
         loss = lm_loss + sop_loss
         averaged_losses = average_losses_across_data_parallel_group(
-            [lm_loss, sop_loss])
+            [lm_loss, sop_loss], )
         return loss, {
             'lm loss': averaged_losses[0],
             'sop loss': averaged_losses[1]
@@ -105,7 +107,6 @@ def forward_step(data_iterator, model):
 
 
 def train_valid_test_datasets_provider(train_val_test_num_samples):
-    """Build train, valid, and test datasets."""
     ptrace('train_valid_test_datasets_provider')
     args = get_args()
 
@@ -134,7 +135,9 @@ def main():
         model_provider,
         ModelType.encoder_or_decoder,
         forward_step,
-        args_defaults={'tokenizer_type': 'BertWordPieceLowerCase'},
+        args_defaults={
+            'tokenizer_type': 'BertWordPieceLowerCase',
+        },
     )
 
 
