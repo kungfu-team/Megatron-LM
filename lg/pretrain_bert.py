@@ -141,20 +141,10 @@ def main():
     )
 
 
-def noop(*args, **kvargs):
-    pass
-
-
-def pa(title, args):
-    print('# %s' % (title))
-
-
 def setup():
-    arguments._print_args = pa
+    from pytrace import noop
+    arguments._print_args = noop
     initialize._compile_dependencies = noop
-    import pytrace
-    pytrace.f = traced(pytrace.f)
-    pass
 
 
 setup()

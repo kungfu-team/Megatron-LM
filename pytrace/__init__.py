@@ -22,3 +22,7 @@ def traced(f):
 
 def f():
     print(1)
+
+
+def noop(*args, **kvargs):
+    pass
