@@ -1,3 +1,37 @@
+Traceback (most recent call last):
+  File "/src/lg/./pretrain_bert.py", line 170, in <module>
+    main()
+  File "/src/pytrace/__init__.py", line 81, in g
+    return f(*args, **kvargs)
+  File "/src/lg/./pretrain_bert.py", line 138, in main
+    pretrain(
+  File "/src/megatron/training.py", line 134, in pretrain
+    = build_train_valid_test_data_iterators(
+  File "/src/megatron/training.py", line 988, in build_train_valid_test_data_iterators
+    build_train_valid_test_data_loaders(
+  File "/src/megatron/training.py", line 949, in build_train_valid_test_data_loaders
+    train_ds, valid_ds, test_ds = build_train_valid_test_datasets(
+  File "/src/megatron/training.py", line 922, in build_train_valid_test_datasets
+    return build_train_valid_test_datasets_provider(train_val_test_num_samples)
+  File "/src/pytrace/__init__.py", line 81, in g
+    return f(*args, **kvargs)
+  File "/src/lg/./pretrain_bert.py", line 119, in train_valid_test_datasets_provider
+    train_ds, valid_ds, test_ds = build_train_valid_test_datasets(
+  File "/src/megatron/data/dataset_utils.py", line 431, in build_train_valid_test_datasets
+    return _build_train_valid_test_datasets(data_prefix[0],
+  File "/src/megatron/data/dataset_utils.py", line 589, in _build_train_valid_test_datasets
+    train_dataset = build_dataset(0, 'train')
+  File "/src/megatron/data/dataset_utils.py", line 571, in build_dataset
+    dataset = BertDataset(
+  File "/src/megatron/data/bert_dataset.py", line 39, in __init__
+    self.samples_mapping = get_samples_mapping(self.indexed_dataset,
+  File "/src/pytrace/__init__.py", line 81, in g
+    return f(*args, **kvargs)
+  File "/src/megatron/data/dataset_utils.py", line 691, in get_samples_mapping
+    from megatron.data import helpers
+
+---
+
 ImportError: cannot import name 'UnencryptedCookieSessionFactoryConfig' from 'pyramid.session' (unknown location)
 
 
