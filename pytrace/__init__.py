@@ -6,20 +6,6 @@ def END(name):
     print(name)
 
 
-def ptrace(name):
-    print('[T] %s' % (name))
-
-
-def traced(f, name=''):
-
-    def g(*args, **kvargs):
-        BGN('BGN ' + name)
-        f(*args, **kvargs)
-        END('END ' + name)
-
-    return g
-
-
 def f():
     print(1)
 
@@ -41,3 +27,16 @@ class Context(object):
     def __exit__(self, a, b, c):
         pass
         END(self.name)
+
+
+def ptrace(name):
+    print('[T] %s' % (name))
+
+
+def traced(f):
+
+    def g(*args, **kvargs):
+        with Context(f.__name__):
+            return f(*args, **kvargs)
+
+    return g

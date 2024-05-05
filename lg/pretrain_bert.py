@@ -30,7 +30,7 @@ def model_provider(pre_process=True, post_process=True):
     return model
 
 
-def _get_batch(data_iterator):
+def get_batch(data_iterator):
     # Items and their type.
     keys = [
         'text', 'types', 'labels', 'is_random', 'loss_mask', 'padding_mask'
@@ -55,9 +55,7 @@ def _get_batch(data_iterator):
     return tokens, types, sentence_order, loss_mask, lm_labels, padding_mask
 
 
-def get_batch(data_iterator):
-    with pytrace.Context('get_batch'):
-        return _get_batch(data_iterator)
+get_batch = tr(get_batch)
 
 
 def loss_func(loss_mask, sentence_order, output_tensor):
