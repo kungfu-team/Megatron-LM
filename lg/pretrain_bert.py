@@ -2,7 +2,7 @@ from functools import partial
 
 import torch
 import torch.nn.functional as F
-from megatron import arguments, get_args, get_timers, print_rank_0
+from megatron import arguments, get_args, get_timers, initialize, print_rank_0
 from megatron.core import tensor_parallel
 from megatron.core.enums import ModelType
 from megatron.data.dataset_utils import build_train_valid_test_datasets
@@ -13,8 +13,6 @@ from pytrace import ptrace, traced
 
 
 def model_provider(pre_process=True, post_process=True):
-    """Build the model."""
-
     print_rank_0('building BERT model ...')
 
     args = get_args()
@@ -132,8 +130,8 @@ def f():
 
 
 def main():
-    f()
-    return
+    # f()
+    # return
     pretrain(
         train_valid_test_datasets_provider,
         model_provider,
@@ -143,13 +141,17 @@ def main():
     )
 
 
-def pa(title, args):
-    print('# %s' % (title))
+def noop(*args, **kvargs):
     pass
 
 
+def pa(title, args):
+    print('# %s' % (title))
+
+
 def setup():
-    # arguments._print_args = pa
+    arguments._print_args = pa
+    initialize._compile_dependencies = noop
     import pytrace
     pytrace.f = traced(pytrace.f)
     pass
