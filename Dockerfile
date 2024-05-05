@@ -11,3 +11,4 @@ WORKDIR /src
 ADD . .
 
 ENV PYTHONPATH=/src
+ENTRYPOINT []
