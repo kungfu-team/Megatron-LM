@@ -1,3 +1,21 @@
+class Counters(object):
+
+    def __init__(self):
+        self.counters = dict()
+
+    def next(self, name):
+        if name not in self.counters:
+            self.counters[name] = 0
+            return 0
+        else:
+            n = self.counters[name]
+            self.counters[name] += 1
+            return n
+
+
+_counters = Counters()
+
+
 class Context(object):
 
     def __init__(self):
@@ -35,12 +53,13 @@ class TraceScope(object):
     def __enter__(self):
         depth = self.ctx.bgn()
         tab = indent * depth
-        print(tab + '{ //' + self.name)
+        print(tab + '{ // ' + self.name)
 
     def __exit__(self, a, b, c):
         depth = self.ctx.end()
         tab = indent * depth
-        print(tab + '} //' + self.name)
+        n = _counters.next(self.name)
+        print(tab + '} // ' + self.name + ' | ' + str(n))
 
 
 def ptrace(name):

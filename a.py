@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 
-from pytrace import with_trace as tr
-
-def traced(f):
-    return tr(f)
-    # return f
+from pytrace import traced
 
 
 @traced
@@ -12,6 +8,9 @@ def f():
     print(1)
 
 
-f = tr(f)
+@traced
+def main():
+    f()
 
-f()
+
+main()

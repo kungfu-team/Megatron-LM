@@ -12,7 +12,9 @@ main() {
     else
         measure ./lg/fix.sh
         measure ./a.py
-        measure ./shell ./x
+        if [ $(uname) = "Linux" ]; then
+            measure ./shell ./x
+        fi
         # ./Dockerfile
         # ./lg/linux-main.sh
         # ./lg/bert.sh
