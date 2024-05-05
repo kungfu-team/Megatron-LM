@@ -1,5 +1,6 @@
 from functools import partial
 
+import pytrace
 import torch
 import torch.nn.functional as F
 from megatron import arguments, get_args, get_timers, initialize, print_rank_0
@@ -29,7 +30,7 @@ def model_provider(pre_process=True, post_process=True):
     return model
 
 
-def get_batch(data_iterator):
+def _get_batch(data_iterator):
     # Items and their type.
     keys = [
         'text', 'types', 'labels', 'is_random', 'loss_mask', 'padding_mask'
@@ -52,6 +53,11 @@ def get_batch(data_iterator):
     padding_mask = data_b['padding_mask'].long()
 
     return tokens, types, sentence_order, loss_mask, lm_labels, padding_mask
+
+
+def get_batch(data_iterator):
+    with pytrace.Context('get_batch'):
+        return _get_batch(data_iterator)
 
 
 def loss_func(loss_mask, sentence_order, output_tensor):

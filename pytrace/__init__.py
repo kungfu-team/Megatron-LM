@@ -26,3 +26,18 @@ def f():
 
 def noop(*args, **kvargs):
     pass
+
+
+class Context(object):
+
+    def __init__(self, name=''):
+        self.name = name
+        pass
+
+    def __enter__(self):
+        pass
+        BGN(self.name)
+
+    def __exit__(self, a, b, c):
+        pass
+        END(self.name)
