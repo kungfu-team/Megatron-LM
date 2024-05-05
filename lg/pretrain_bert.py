@@ -1,6 +1,5 @@
 from functools import partial
 
-import pytrace
 import torch
 import torch.nn.functional as F
 from megatron import arguments, get_args, get_timers, initialize, print_rank_0
@@ -10,8 +9,7 @@ from megatron.data.dataset_utils import build_train_valid_test_datasets
 from megatron.model import BertModel
 from megatron.training import pretrain
 from megatron.utils import average_losses_across_data_parallel_group
-from pytrace import ptrace, traced
-from pytrace import with_trace as tr
+from pytrace import traced
 
 
 @traced
