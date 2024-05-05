@@ -11,7 +11,7 @@ from megatron.model import BertModel
 from megatron.training import pretrain
 from megatron.utils import average_losses_across_data_parallel_group
 from pytrace import ptrace
-from pytrace import traced as tr
+from pytrace import with_trace as tr
 
 
 def model_provider(pre_process=True, post_process=True):
@@ -87,8 +87,10 @@ def loss_func(loss_mask, sentence_order, output_tensor):
         return loss, {'lm loss': averaged_losses[0]}
 
 
+loss_func = tr(loss_func)
+
+
 def forward_step(data_iterator, model):
-    """Forward step."""
     args = get_args()
     timers = get_timers()
 

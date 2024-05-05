@@ -33,7 +33,7 @@ def ptrace(name):
     print('[T] %s' % (name))
 
 
-def traced(f):
+def with_trace(f):
 
     def g(*args, **kvargs):
         with Context(f.__name__):
