@@ -148,8 +148,11 @@ def main():
 
 def setup():
     from pytrace import noop
+    from pytrace import traced as tr
     arguments._print_args = noop
     initialize._compile_dependencies = noop
+    from megatron.data import dataset_utils
+    dataset_utils.get_samples_mapping = tr(dataset_utils.get_samples_mapping)
 
 
 setup()

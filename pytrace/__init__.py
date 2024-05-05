@@ -44,6 +44,14 @@ def noop(*_args, **_kvargs):
     pass
 
 
+tf = open('trace.txt', 'w')
+
+
+def putln(line):
+    print(line)
+    tf.write(line + '\n')
+
+
 class TraceScope(object):
 
     def __init__(self, name=''):
@@ -53,13 +61,13 @@ class TraceScope(object):
     def __enter__(self):
         depth = self.ctx.bgn()
         tab = indent * depth
-        print(tab + '{ // ' + self.name)
+        putln(tab + '{ // ' + self.name)
 
     def __exit__(self, a, b, c):
         depth = self.ctx.end()
         tab = indent * depth
         n = _counters.next(self.name)
-        print(tab + '} // ' + self.name + ' | ' + str(n))
+        putln(tab + '} // ' + self.name + ' | ' + str(n))
 
 
 def ptrace(name):
