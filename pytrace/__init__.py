@@ -40,3 +40,7 @@ def with_trace(f):
             return f(*args, **kvargs)
 
     return g
+
+
+def traced(f):
+    return with_trace(f)

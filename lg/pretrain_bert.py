@@ -10,10 +10,11 @@ from megatron.data.dataset_utils import build_train_valid_test_datasets
 from megatron.model import BertModel
 from megatron.training import pretrain
 from megatron.utils import average_losses_across_data_parallel_group
-from pytrace import ptrace
+from pytrace import ptrace, traced
 from pytrace import with_trace as tr
 
 
+@traced
 def model_provider(pre_process=True, post_process=True):
     print_rank_0('building BERT model ...')
 
@@ -30,6 +31,7 @@ def model_provider(pre_process=True, post_process=True):
     return model
 
 
+@traced
 def get_batch(data_iterator):
     # Items and their type.
     keys = [
@@ -55,9 +57,7 @@ def get_batch(data_iterator):
     return tokens, types, sentence_order, loss_mask, lm_labels, padding_mask
 
 
-get_batch = tr(get_batch)
-
-
+@traced
 def loss_func(loss_mask, sentence_order, output_tensor):
     lm_loss_, sop_logits = output_tensor
 
@@ -87,9 +87,7 @@ def loss_func(loss_mask, sentence_order, output_tensor):
         return loss, {'lm loss': averaged_losses[0]}
 
 
-loss_func = tr(loss_func)
-
-
+@traced
 def forward_step(data_iterator, model):
     args = get_args()
     timers = get_timers()
@@ -112,6 +110,7 @@ def forward_step(data_iterator, model):
     return output_tensor, partial(loss_func, loss_mask, sentence_order)
 
 
+@traced
 def train_valid_test_datasets_provider(train_val_test_num_samples):
     ptrace('train_valid_test_datasets_provider')
     args = get_args()

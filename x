@@ -11,6 +11,7 @@ main() {
         measure ./lg/docker-main.sh
     else
         measure ./lg/fix.sh
+        measure ./a.py
         measure ./shell ./x
         # ./Dockerfile
         # ./lg/linux-main.sh
