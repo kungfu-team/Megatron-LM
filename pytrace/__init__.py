@@ -72,6 +72,7 @@ def with_trace(f):
         with TraceScope(f.__name__):
             return f(*args, **kvargs)
 
+    g.__name__ = f.__name__
     return g
 
 

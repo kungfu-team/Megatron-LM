@@ -4,6 +4,7 @@ from pytrace import traced
 
 
 @traced
+@traced
 def f():
     print(1)
 
