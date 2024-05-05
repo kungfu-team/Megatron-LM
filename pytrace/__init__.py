@@ -18,18 +18,6 @@ _ctx = Context()
 indent = ' ' * 4
 
 
-def BGN(name):
-    depth = _ctx.bgn()
-    tab = indent * depth
-    print(tab + '{ //' + name)
-
-
-def END(name):
-    depth = _ctx.end()
-    tab = indent * depth
-    print(tab + '} //' + name)
-
-
 def f():
     print(1)
 
@@ -42,15 +30,17 @@ class TraceScope(object):
 
     def __init__(self, name=''):
         self.name = name
-        pass
+        self.ctx = _ctx
 
     def __enter__(self):
-        pass
-        BGN(self.name)
+        depth = self.ctx.bgn()
+        tab = indent * depth
+        print(tab + '{ //' + self.name)
 
     def __exit__(self, a, b, c):
-        pass
-        END(self.name)
+        depth = self.ctx.end()
+        tab = indent * depth
+        print(tab + '} //' + self.name)
 
 
 def ptrace(name):

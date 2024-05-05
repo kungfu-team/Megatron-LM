@@ -102,10 +102,12 @@ def forward_step(data_iterator, model):
         types = None
 
     # Forward pass through the model.
-    output_tensor = model(tokens,
-                          padding_mask,
-                          tokentype_ids=types,
-                          lm_labels=lm_labels)
+    output_tensor = model(
+        tokens,
+        padding_mask,
+        tokentype_ids=types,
+        lm_labels=lm_labels,
+    )
 
     return output_tensor, partial(loss_func, loss_mask, sentence_order)
 
