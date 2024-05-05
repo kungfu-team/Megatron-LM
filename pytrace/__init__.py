@@ -86,3 +86,13 @@ def with_trace(f):
 
 def traced(f):
     return with_trace(f)
+
+
+def log_unary(f):
+
+    def g(x):
+        print('%s(%s)' % (f.__name__, x))
+        return f(x)
+
+    g.__name__ = f.__name__
+    return g

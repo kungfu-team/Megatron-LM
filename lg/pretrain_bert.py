@@ -146,24 +146,15 @@ def main():
     )
 
 
-def isfile(f):
-
-    def g(x):
-        print('%s(%s)' % (f.__name__, x))
-        return f(x)
-
-    return g
-
-
 def setup():
-    from pytrace import noop
+    from pytrace import log_unary, noop
     from pytrace import traced as tr
     arguments._print_args = noop
     initialize._compile_dependencies = noop
     from megatron.data import dataset_utils
     dataset_utils.get_samples_mapping = tr(dataset_utils.get_samples_mapping)
     from os import path
-    path.isfile = isfile(path.isfile)
+    path.isfile = log_unary(path.isfile)
 
 
 setup()
