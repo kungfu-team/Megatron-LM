@@ -10,12 +10,12 @@ def ptrace(name):
     print('[T] %s' % (name))
 
 
-def traced(f):
+def traced(f, name=''):
 
     def g(*args, **kvargs):
-        BGN('BGN')
+        BGN('BGN ' + name)
         f(*args, **kvargs)
-        END('END')
+        END('END ' + name)
 
     return g
 

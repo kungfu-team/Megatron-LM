@@ -9,7 +9,8 @@ from megatron.data.dataset_utils import build_train_valid_test_datasets
 from megatron.model import BertModel
 from megatron.training import pretrain
 from megatron.utils import average_losses_across_data_parallel_group
-from pytrace import ptrace, traced
+from pytrace import ptrace
+from pytrace import traced as tr
 
 
 def model_provider(pre_process=True, post_process=True):
@@ -17,11 +18,13 @@ def model_provider(pre_process=True, post_process=True):
 
     args = get_args()
     num_tokentypes = 2 if args.bert_binary_head else 0
-    model = BertModel(num_tokentypes=num_tokentypes,
-                      add_binary_head=args.bert_binary_head,
-                      parallel_output=True,
-                      pre_process=pre_process,
-                      post_process=post_process)
+    model = BertModel(
+        num_tokentypes=num_tokentypes,
+        add_binary_head=args.bert_binary_head,
+        parallel_output=True,
+        pre_process=pre_process,
+        post_process=post_process,
+    )
 
     return model
 
@@ -118,20 +121,14 @@ def train_valid_test_datasets_provider(train_val_test_num_samples):
         short_seq_prob=args.short_seq_prob,
         seed=args.seed,
         skip_warmup=(not args.mmap_warmup),
-        binary_head=args.bert_binary_head)
+        binary_head=args.bert_binary_head,
+    )
     print_rank_0("> finished creating BERT datasets ...")
 
     return train_ds, valid_ds, test_ds
 
 
-def f():
-    from pytrace import f
-    f()
-
-
 def main():
-    # f()
-    # return
     pretrain(
         train_valid_test_datasets_provider,
         model_provider,
