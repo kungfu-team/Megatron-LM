@@ -1,3 +1,6 @@
+#include <stdexcept>  // overflow_error
+#include <vector>     // vector
+
 template <typename DocIdx>
 py::array
 build_mapping_impl(const py::array_t<int64_t> &docs_,
@@ -28,37 +31,6 @@ build_mapping_impl(const py::array_t<int64_t> &docs_,
         short_seq_ratio = static_cast<int32_t>(round(1.0 / short_seq_prob));
     }
 
-    if (verbose) {
-        const auto sent_start_index = docs[0];
-        const auto sent_end_index = docs[docs_.shape(0) - 1];
-        const auto num_sentences = sent_end_index - sent_start_index;
-        cout << "    using:" << endl << std::flush;
-        cout << "     number of documents:            " << docs_.shape(0) - 1
-             << endl
-             << std::flush;
-        cout << "     sentences range:                [" << sent_start_index
-             << ", " << sent_end_index << ")" << endl
-             << std::flush;
-        cout << "     total number of sentences:      " << num_sentences << endl
-             << std::flush;
-        cout << "     number of epochs:               " << num_epochs << endl
-             << std::flush;
-        cout << "     maximum number of samples:      " << max_num_samples
-             << endl
-             << std::flush;
-        cout << "     maximum sequence length:        " << max_seq_length
-             << endl
-             << std::flush;
-        cout << "     short sequence probability:     " << short_seq_prob
-             << endl
-             << std::flush;
-        cout << "     short sequence ration (1/prob): " << short_seq_ratio
-             << endl
-             << std::flush;
-        cout << "     seed:                           " << seed << endl
-             << std::flush;
-    }
-
     // Mapping and it's length (1D).
     int64_t num_samples = -1;
     DocIdx *maps = NULL;
@@ -85,11 +57,6 @@ build_mapping_impl(const py::array_t<int64_t> &docs_,
         // For each epoch:
         for (int32_t epoch = 0; epoch < num_epochs; ++epoch) {
             if (map_index >= max_num_samples) {
-                if (verbose && (!second)) {
-                    cout << "    reached " << max_num_samples
-                         << " samples after " << epoch << " epochs ..." << endl
-                         << std::flush;
-                }
                 break;
             }
             // For each document:
@@ -195,19 +162,6 @@ build_mapping_impl(const py::array_t<int64_t> &docs_,
         }              // for (int epoch=0; epoch < num_epochs; ++epoch) {
 
         if (!second) {
-            if (verbose) {
-                cout << "   number of empty documents: " << empty_docs << endl
-                     << std::flush;
-                cout << "   number of documents with one sentence: "
-                     << one_sent_docs << endl
-                     << std::flush;
-                cout << "   number of documents with long sentences: "
-                     << long_sent_docs << endl
-                     << std::flush;
-                cout << "   will create mapping for " << map_index << " samples"
-                     << endl
-                     << std::flush;
-            }
             assert(maps == NULL);
             assert(num_samples < 0);
             maps = new DocIdx[3 * map_index];
