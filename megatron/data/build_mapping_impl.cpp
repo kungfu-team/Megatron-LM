@@ -1,3 +1,6 @@
+#include <algorithm>  // swap
+#include <limits>     // numeric_limits
+#include <random>     // mt19937, mt19937_64
 #include <stdexcept>  // overflow_error
 #include <vector>     // vector
 
@@ -179,9 +182,9 @@ build_mapping_impl(const py::array_t<int64_t> &docs_,
         const auto i0 = 3 * i;
         const auto j0 = 3 * j;
         // Swap values.
-        swap(maps[i0], maps[j0]);
-        swap(maps[i0 + 1], maps[j0 + 1]);
-        swap(maps[i0 + 2], maps[j0 + 2]);
+        std::swap(maps[i0], maps[j0]);
+        std::swap(maps[i0 + 1], maps[j0 + 1]);
+        std::swap(maps[i0 + 2], maps[j0 + 2]);
     }
 
     // Method to deallocate memory.
