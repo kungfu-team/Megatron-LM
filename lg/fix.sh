@@ -16,4 +16,7 @@ cd ..
 # mv ./log/dos2unix ./log/dos2unix.py
 py_fix ./log/dos2unix
 # mv ./log/dos2unix.py ./log/dos2unix
-cxx-fix megatron/data/build_mapping_impl.cpp
+
+if [ $(uname) = "Darwin" ]; then
+    cxx-fix megatron/data/build_mapping_impl.cpp
+fi
