@@ -2,8 +2,8 @@
     { // model_provider
     } // model_provider | 0
 isfile(/root/var/ckpt/bert/latest_checkpointed_iteration.txt)
-train_valid_test_datasets_provider([800, 80, 80])
     { // train_valid_test_datasets_provider
+train_valid_test_datasets_provider([800, 80, 80])
         { // get_samples_mapping
 isfile(/data/megatron-lm/bert/enwiki/bert_text_sentence_train_indexmap_800mns_509msl_0.10ssp_1234s.npy)
         } // get_samples_mapping | 0
