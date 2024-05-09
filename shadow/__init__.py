@@ -43,17 +43,31 @@ def flip(m):
     return sorted((v, k) for k, v in m.items())
 
 
+def scalar_size(t):
+    sizes = {
+        'f16': 2,
+        'f32': 4,
+    }
+    return sizes[t]
+
+
 def stat_model(m: torch.nn.Module):
     by_type = dict()
     by_scalar = dict()
+    tot = 0
     for x in m.parameters():
         t, dims = show_dtype(x.dtype), shape_dims(x.shape)
         k = '%s[%s]' % (t, show_dims(dims))
         by_type[k] = by_type.get(k, 0) + 1
-        by_scalar[t] = by_scalar.get(t, 0) + prod(dims)
+
+        n = prod(dims)
+        by_scalar[t] = by_scalar.get(t, 0) + n
+        tot += scalar_size(t) * n
 
     for n, k in flip(by_type):
-        print('%s x %d' % (k, n))
+        print('{} x {:,}'.format(k, n))
 
     for n, k in flip(by_scalar):
-        print('%s x %d' % (k, n))
+        print('{} x {:,}'.format(k, n))
+
+    print('tot: {:,}'.format(tot))
