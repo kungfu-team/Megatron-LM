@@ -1,4 +1,4 @@
-from megatron import get_args, initialize
+from megatron import arguments, get_args, initialize
 from megatron.core.enums import ModelType
 from megatron.initialize import initialize_megatron
 from megatron.model import BertModel
@@ -24,8 +24,13 @@ def build_model(pre_process=True, post_process=True):
     return model
 
 
+def pp(p):
+    return '%s' % (p)
+
+
 def main():
     initialize._compile_dependencies = noop
+    arguments._print_args = noop
     initialize_megatron(
         extra_args_provider=None,
         args_defaults={
@@ -34,7 +39,12 @@ def main():
     )
 
     m = build_model()
-    print(m)
+    # print(m)
+    print(m.__class__)
+    # for x in dir(m):
+    #     print(x)
+    for p in m.parameters():
+        print('%s' % (pp(p)))
 
 
 main()
