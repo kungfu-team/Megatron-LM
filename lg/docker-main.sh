@@ -6,6 +6,6 @@ cd $(dirname $0)
 . ./_x
 
 x ./bert.sh
-# cat trace.txt
+cp -v trace.txt /log
 
 echo "done $0"

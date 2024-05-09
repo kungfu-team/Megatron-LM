@@ -24,6 +24,7 @@ docker_run_flags() {
     echo --name $(cat name.txt)
 
     echo -v /data:/data
+    echo -v $PWD/log:/log
 }
 
 docker_run() { docker run $(docker_run_flags) -t $(cat tag.txt) $@; }

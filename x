@@ -14,7 +14,7 @@ main() {
         measure ./a.py
         measure ./samples-mapping.sh
         git add -A
-        exit
+        # exit
         if [ $(uname) = "Linux" ]; then
             measure ./shell ./x
         fi
