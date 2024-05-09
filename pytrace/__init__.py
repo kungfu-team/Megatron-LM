@@ -118,7 +118,24 @@ def traced(f):
     return with_trace(f)
 
 
-def log_unary(f):
+def log_args(fn, *args, **kvargs):
+    for i, a in enumerate(args):
+        putln('%s | [%d]: %s' % (fn, i, a))
+    for k, v in kvargs:
+        putln('%s | %s: %s' % (fn, k, v))
+
+
+def with_log_args(f):
+
+    def g(*args, **kvargs):
+        log_args(f.__name__, *args, **kvargs)
+        return f(*args, **kvargs)
+
+    g.__name__ = f.__name__
+    return g
+
+
+def with_log_unary(f):
 
     def g(x):
         putln('%s(%s)' % (f.__name__, x))

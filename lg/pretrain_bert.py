@@ -9,7 +9,7 @@ from megatron.data.dataset_utils import build_train_valid_test_datasets
 from megatron.model import BertModel
 from megatron.training import pretrain
 from megatron.utils import average_losses_across_data_parallel_group
-from pytrace import log_unary, traced, traced_3
+from pytrace import traced, traced_3, with_log_args, with_log_unary
 
 
 @traced
@@ -86,6 +86,7 @@ def loss_func(loss_mask, sentence_order, output_tensor):
 
 
 @traced_3
+@with_log_args
 def forward_step(data_iterator, model):
     args = get_args()
     timers = get_timers()
@@ -111,7 +112,7 @@ def forward_step(data_iterator, model):
 
 
 @traced
-@log_unary
+@with_log_unary
 def train_valid_test_datasets_provider(train_val_test_num_samples):
     args = get_args()
 
@@ -135,6 +136,7 @@ def train_valid_test_datasets_provider(train_val_test_num_samples):
 
 
 @traced
+@with_log_args
 def main():
     pretrain(
         train_valid_test_datasets_provider,
@@ -148,16 +150,24 @@ def main():
 
 
 def setup():
-    from pytrace import log_unary, noop
+    from pytrace import noop
     from pytrace import traced as tr
+    from pytrace import with_log_unary
     arguments._print_args = noop
     initialize._compile_dependencies = noop
     from megatron.data import dataset_utils
+
+    # @traced
+    # @with_log_args
+    # def get_samples_mapping(*args, **kwargs):
+    #     return dataset_utils.get_samples_mapping(*args, **kwargs)
+    # dataset_utils.get_samples_mapping = get_samples_mapping
     dataset_utils.get_samples_mapping = tr(dataset_utils.get_samples_mapping)
+
     import megatron
     megatron.get_args = tr(megatron.get_args)
     from os import path
-    path.isfile = log_unary(path.isfile)
+    path.isfile = with_log_unary(path.isfile)
 
 
 setup()
