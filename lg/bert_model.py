@@ -1,3 +1,4 @@
+import torch
 from megatron import arguments, get_args, initialize
 from megatron.core.enums import ModelType
 from megatron.initialize import initialize_megatron
@@ -24,8 +25,29 @@ def build_model(pre_process=True, post_process=True):
     return model
 
 
-def pp(p):
-    return '%s' % (p)
+def show_dtype(t: torch.dtype):
+    names = {
+        torch.float16: 'f16',
+        torch.float32: 'f32',
+    }
+    if t in names:
+        return names[t]
+    return t
+
+
+def show_shape(s: torch.Size):
+    dims = []
+    for d in s:
+        dims.append(int(d))
+    return '[%s]' % (','.join(str(d) for d in dims))
+
+
+def show_tensor(x: torch.Tensor):
+    return '%s%s' % (show_dtype(x.dtype), show_shape(x.shape))
+
+
+def pp(p: torch.nn.parameter.Parameter):
+    return show_tensor(p)
 
 
 def main():
