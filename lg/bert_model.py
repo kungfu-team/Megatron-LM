@@ -2,7 +2,7 @@ from megatron import arguments, get_args, initialize
 from megatron.core.enums import ModelType
 from megatron.initialize import initialize_megatron
 from megatron.model import BertModel
-from shadow import show_model
+from shadow import show_model, stat_model
 
 
 def noop(*_args, **_kvargs):
@@ -37,6 +37,7 @@ def main():
 
     m = build_model()
     show_model(m)
+    stat_model(m)
 
 
 main()
