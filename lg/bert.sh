@@ -52,8 +52,12 @@ flags() {
     echo --load $CHECKPOINT_PATH
 }
 
-show_bert() {
+show_bert_model() {
     torchrun ./bert_model.py $(flags)
+}
+
+show_bert_data() {
+    torchrun ./bert_data.py $(flags)
 }
 
 train_bert() {
@@ -62,7 +66,8 @@ train_bert() {
 }
 
 main() {
-    show_bert
+    show_bert_model
+    show_bert_data
     # train_bert
 }
 
