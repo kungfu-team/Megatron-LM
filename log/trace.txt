@@ -23,7 +23,7 @@ isfile(/data/megatron-lm/bert/enwiki/bert_text_sentence_test_indexmap_80mns_509m
         } // build_train_valid_test_datasets | 0
     } // train_valid_test_datasets_provider | 0
     { // forward_step
-forward_step | [0]: <torch.utils.data.dataloader._MultiProcessingDataLoaderIter object at 0x7fb460649630>
+forward_step | [0]: <torch.utils.data.dataloader._MultiProcessingDataLoaderIter object at 0x7fb42be63b80>
 forward_step | [1]: DistributedDataParallel(
   (module): Float16Module(
     (module): BertModel(
@@ -73,7 +73,7 @@ forward_step | [1]: DistributedDataParallel(
     { // loss_func
     } // loss_func | 0
     { // forward_step
-forward_step | [0]: <torch.utils.data.dataloader._MultiProcessingDataLoaderIter object at 0x7fb460649630>
+forward_step | [0]: <torch.utils.data.dataloader._MultiProcessingDataLoaderIter object at 0x7fb42be63b80>
 forward_step | [1]: DistributedDataParallel(
   (module): Float16Module(
     (module): BertModel(
