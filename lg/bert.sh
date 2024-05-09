@@ -4,6 +4,8 @@ set -e
 
 cd $(dirname $0)
 
+. ./_x
+
 export CUDA_DEVICE_MAX_CONNECTIONS=1
 
 CHECKPOINT_PATH=$HOME/var/ckpt/bert
@@ -66,11 +68,11 @@ train_bert() {
 }
 
 main() {
-    show_bert_model
-    show_bert_data
-    # train_bert
+    measure show_bert_model
+    measure show_bert_data
+    # measure train_bert
 }
 
-main
+measure main
 
 echo "done $0"
