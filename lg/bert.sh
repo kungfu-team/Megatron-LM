@@ -58,6 +58,7 @@ show_bert() {
 
 train_bert() {
     torchrun ./pretrain_bert.py $(flags)
+    cp -v trace.txt /log
 }
 
 main() {
