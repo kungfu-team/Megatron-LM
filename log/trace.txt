@@ -5,16 +5,10 @@
         { // get_samples_mapping
         } // get_samples_mapping | 0
         { // get_samples_mapping
-        } // get_samples_mapping | 0
-        { // get_samples_mapping
         } // get_samples_mapping | 1
+        { // get_samples_mapping
+        } // get_samples_mapping | 2
     } // train_valid_test_datasets_provider | 0
-    { // forward_step
-        { // get_batch
-        } // get_batch | 0
-    } // forward_step | 0
-    { // loss_func
-    } // loss_func | 0
     { // forward_step
         { // get_batch
         } // get_batch | 0
@@ -27,4 +21,10 @@
     } // forward_step | 1
     { // loss_func
     } // loss_func | 1
+    { // forward_step
+        { // get_batch
+        } // get_batch | 2
+    } // forward_step | 2
+    { // loss_func
+    } // loss_func | 2
 } // main | 0

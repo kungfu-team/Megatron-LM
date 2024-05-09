@@ -1,3 +1,8 @@
+import os
+
+pid = os.getpid()
+
+
 class Counters(object):
 
     def __init__(self):
@@ -8,9 +13,8 @@ class Counters(object):
             self.counters[name] = 0
             return 0
         else:
-            n = self.counters[name]
             self.counters[name] += 1
-            return n
+            return self.counters[name]
 
 
 _counters = Counters()
@@ -67,7 +71,9 @@ class TraceScope(object):
         depth = self.ctx.end()
         tab = indent * depth
         n = _counters.next(self.name)
-        putln(tab + '} // ' + self.name + ' | ' + str(n))
+        msg = tab + '} // ' + self.name + ' | ' + str(n)
+        # msg += ' @ ' + str(pid)
+        putln(msg)
 
 
 def ptrace(name):
