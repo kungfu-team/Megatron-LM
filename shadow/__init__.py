@@ -22,3 +22,8 @@ def show_tensor(x: torch.Tensor):
 
 def show_parameter(p: torch.nn.parameter.Parameter):
     return show_tensor(p)
+
+
+def show_model(m: torch.nn.Module):
+    for p in m.parameters():
+        print('%s' % (show_parameter(p)))

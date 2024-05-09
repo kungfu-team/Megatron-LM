@@ -2,7 +2,7 @@ from megatron import arguments, get_args, initialize
 from megatron.core.enums import ModelType
 from megatron.initialize import initialize_megatron
 from megatron.model import BertModel
-from shadow import show_parameter
+from shadow import show_model
 
 
 def noop(*_args, **_kvargs):
@@ -36,12 +36,7 @@ def main():
     )
 
     m = build_model()
-    # print(m)
-    print(m.__class__)
-    # for x in dir(m):
-    #     print(x)
-    for p in m.parameters():
-        print('%s' % (show_parameter(p)))
+    show_model(m)
 
 
 main()
