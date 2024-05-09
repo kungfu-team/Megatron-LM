@@ -153,6 +153,8 @@ def setup():
     initialize._compile_dependencies = noop
     from megatron.data import dataset_utils
     dataset_utils.get_samples_mapping = tr(dataset_utils.get_samples_mapping)
+    import megatron
+    megatron.get_args = tr(megatron.get_args)
     from os import path
     path.isfile = log_unary(path.isfile)
 
