@@ -10,18 +10,20 @@
 isfile(/root/var/ckpt/bert/latest_checkpointed_iteration.txt)
     { // train_valid_test_datasets_provider
 train_valid_test_datasets_provider([800, 80, 80])
-        { // get_samples_mapping
+        { // build_train_valid_test_datasets
+            { // get_samples_mapping
 isfile(/data/megatron-lm/bert/enwiki/bert_text_sentence_train_indexmap_800mns_509msl_0.10ssp_1234s.npy)
-        } // get_samples_mapping | 0
-        { // get_samples_mapping
+            } // get_samples_mapping | 0
+            { // get_samples_mapping
 isfile(/data/megatron-lm/bert/enwiki/bert_text_sentence_valid_indexmap_80mns_509msl_0.10ssp_1234s.npy)
-        } // get_samples_mapping | 1
-        { // get_samples_mapping
+            } // get_samples_mapping | 1
+            { // get_samples_mapping
 isfile(/data/megatron-lm/bert/enwiki/bert_text_sentence_test_indexmap_80mns_509msl_0.10ssp_1234s.npy)
-        } // get_samples_mapping | 2
+            } // get_samples_mapping | 2
+        } // build_train_valid_test_datasets | 0
     } // train_valid_test_datasets_provider | 0
     { // forward_step
-forward_step | [0]: <torch.utils.data.dataloader._MultiProcessingDataLoaderIter object at 0x7f5aec7d1450>
+forward_step | [0]: <torch.utils.data.dataloader._MultiProcessingDataLoaderIter object at 0x7fb460649630>
 forward_step | [1]: DistributedDataParallel(
   (module): Float16Module(
     (module): BertModel(
@@ -71,7 +73,7 @@ forward_step | [1]: DistributedDataParallel(
     { // loss_func
     } // loss_func | 0
     { // forward_step
-forward_step | [0]: <torch.utils.data.dataloader._MultiProcessingDataLoaderIter object at 0x7f5aec7d1450>
+forward_step | [0]: <torch.utils.data.dataloader._MultiProcessingDataLoaderIter object at 0x7fb460649630>
 forward_step | [1]: DistributedDataParallel(
   (module): Float16Module(
     (module): BertModel(

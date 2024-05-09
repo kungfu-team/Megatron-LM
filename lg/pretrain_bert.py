@@ -12,6 +12,10 @@ def setup():
     from os import path
     path.isfile = with_log_unary(path.isfile)
 
+    from megatron.data import dataset_utils
+    dataset_utils.build_train_valid_test_datasets = tr(
+        dataset_utils.build_train_valid_test_datasets)
+
 
 setup()
 
