@@ -9,6 +9,7 @@ py_fix() {
 
 py_fix ./*.py
 py_fix ../pytrace/*.py
+py_fix ../shadow/*.py
 py_fix ../a.py
 py_fix ../samples_mapping.py
 
