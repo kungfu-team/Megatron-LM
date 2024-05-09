@@ -9,7 +9,7 @@ from megatron.data.dataset_utils import build_train_valid_test_datasets
 from megatron.model import BertModel
 from megatron.training import pretrain
 from megatron.utils import average_losses_across_data_parallel_group
-from pytrace import traced
+from pytrace import traced, traced_3
 
 
 @traced
@@ -29,7 +29,7 @@ def model_provider(pre_process=True, post_process=True):
     return model
 
 
-@traced
+@traced_3
 def get_batch(data_iterator):
     # Items and their type.
     keys = [
@@ -55,7 +55,7 @@ def get_batch(data_iterator):
     return tokens, types, sentence_order, loss_mask, lm_labels, padding_mask
 
 
-@traced
+@traced_3
 def loss_func(loss_mask, sentence_order, output_tensor):
     lm_loss_, sop_logits = output_tensor
 
@@ -85,7 +85,7 @@ def loss_func(loss_mask, sentence_order, output_tensor):
         return loss, {'lm loss': averaged_losses[0]}
 
 
-@traced
+@traced_3
 def forward_step(data_iterator, model):
     args = get_args()
     timers = get_timers()

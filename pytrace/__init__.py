@@ -84,6 +84,30 @@ def with_trace(f):
     return g
 
 
+def with_trace_limit(f, limit):
+
+    class G(object):
+
+        def __init__(self):
+            self.__name__ = f.__name__
+            self.n = 0
+
+        def __call__(self, *args, **kvargs):
+            self.n += 1
+            if self.n > limit:
+                return f(*args, **kvargs)
+
+            with TraceScope(f.__name__):
+                return f(*args, **kvargs)
+
+    g = G()
+    return g
+
+
+def traced_3(f):
+    return with_trace_limit(f, 3)
+
+
 def traced(f):
     return with_trace(f)
 
