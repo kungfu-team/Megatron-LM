@@ -30,9 +30,7 @@ def show_dtype(t: torch.dtype):
         torch.float16: 'f16',
         torch.float32: 'f32',
     }
-    if t in names:
-        return names[t]
-    return t
+    return names.get(t, '?')
 
 
 def show_shape(s: torch.Size):
