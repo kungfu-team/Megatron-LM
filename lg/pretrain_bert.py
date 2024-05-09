@@ -9,7 +9,7 @@ from megatron.data.dataset_utils import build_train_valid_test_datasets
 from megatron.model import BertModel
 from megatron.training import pretrain
 from megatron.utils import average_losses_across_data_parallel_group
-from pytrace import traced, traced_3
+from pytrace import log_unary, traced, traced_3
 
 
 @traced
@@ -110,6 +110,7 @@ def forward_step(data_iterator, model):
     return output_tensor, partial(loss_func, loss_mask, sentence_order)
 
 
+@log_unary
 @traced
 def train_valid_test_datasets_provider(train_val_test_num_samples):
     args = get_args()
