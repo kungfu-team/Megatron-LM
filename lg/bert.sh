@@ -62,7 +62,7 @@ train_bert() {
 
 main() {
     show_bert
-    # train_bert
+    train_bert
 }
 
 main

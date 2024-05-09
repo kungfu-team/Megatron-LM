@@ -12,7 +12,7 @@ join() { join_ , $@; }
 
 gpus() {
     echo 0
-    echo 1
+    # echo 1
 }
 
 docker_run_flags() {
