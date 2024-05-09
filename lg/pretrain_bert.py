@@ -1,8 +1,25 @@
+def setup():
+    from megatron import arguments, initialize
+    from pytrace import noop
+    from pytrace import traced as tr
+    from pytrace import traced_3, with_log_unary
+    arguments._print_args = noop
+    initialize._compile_dependencies = noop
+    import megatron
+    from megatron.data import dataset_utils
+    dataset_utils.get_samples_mapping = tr(dataset_utils.get_samples_mapping)
+    megatron.get_args = traced_3(megatron.get_args)
+    from os import path
+    path.isfile = with_log_unary(path.isfile)
+
+
+setup()
+
 from functools import partial
 
 import torch
 import torch.nn.functional as F
-from megatron import arguments, get_args, get_timers, initialize, print_rank_0
+from megatron import get_args, get_timers, print_rank_0
 from megatron.core import tensor_parallel
 from megatron.core.enums import ModelType
 from megatron.data.dataset_utils import build_train_valid_test_datasets
@@ -149,26 +166,4 @@ def main():
     )
 
 
-def setup():
-    from pytrace import noop
-    from pytrace import traced as tr
-    from pytrace import with_log_unary
-    arguments._print_args = noop
-    initialize._compile_dependencies = noop
-    from megatron.data import dataset_utils
-
-    # @traced
-    # @with_log_args
-    # def get_samples_mapping(*args, **kwargs):
-    #     return dataset_utils.get_samples_mapping(*args, **kwargs)
-    # dataset_utils.get_samples_mapping = get_samples_mapping
-    dataset_utils.get_samples_mapping = tr(dataset_utils.get_samples_mapping)
-
-    import megatron
-    megatron.get_args = tr(megatron.get_args)
-    from os import path
-    path.isfile = with_log_unary(path.isfile)
-
-
-setup()
 main()

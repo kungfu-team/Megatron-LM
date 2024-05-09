@@ -125,14 +125,33 @@ def log_args(fn, *args, **kvargs):
         putln('%s | %s: %s' % (fn, k, v))
 
 
+def with_log_args_limit(f, limit):
+
+    class G(object):
+
+        def __init__(self):
+            self.n = 0
+            self.__name__ = f.__name__
+
+        def __call__(self, *args, **kvargs):
+            self.n += 1
+            if self.n < limit:
+                log_args(f.__name__, *args, **kvargs)
+            return f(*args, **kvargs)
+
+    g = G()
+    return g
+
+
 def with_log_args(f):
 
-    def g(*args, **kvargs):
-        log_args(f.__name__, *args, **kvargs)
-        return f(*args, **kvargs)
+    return with_log_args_limit(f, 3)
+    # def g(*args, **kvargs):
+    #     log_args(f.__name__, *args, **kvargs)
+    #     return f(*args, **kvargs)
 
-    g.__name__ = f.__name__
-    return g
+    # g.__name__ = f.__name__
+    # return g
 
 
 def with_log_unary(f):
