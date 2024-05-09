@@ -7,7 +7,7 @@ py_fix() {
     yapf -i $1
 }
 
-py_fix ./pretrain_bert.py
+py_fix ./*.py
 py_fix ../pytrace/*.py
 py_fix ../a.py
 py_fix ../samples_mapping.py
