@@ -40,6 +40,11 @@ _ctx = Context()
 indent = ' ' * 4
 
 
+def dprint(msg):
+    tab = indent * _ctx.depth
+    print(tab + str(msg))
+
+
 def f():
     print(1)
 

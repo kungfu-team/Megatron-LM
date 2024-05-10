@@ -3,6 +3,8 @@ from megatron import arguments, get_args, initialize
 from megatron.data.dataset_utils import build_train_valid_test_datasets
 from megatron.initialize import initialize_megatron
 from megatron.training import build_train_valid_test_data_iterators
+from pytrace import dprint as print
+from pytrace import traced
 from shadow import show_tensor
 
 
@@ -35,10 +37,17 @@ def show_item(x):
     print('.')
 
 
-def show_ds(it: torch.utils.data.dataloader._MultiProcessingDataLoaderIter):
+@traced
+def show_ds(it: torch.utils.data.DataLoader):
+    print(len(it))
+    # print(it.__mro__)
+    assert (isinstance(
+        it, torch.utils.data.dataloader._MultiProcessingDataLoaderIter))
+    # assert (isinstance(it, torch.utils.data.DataLoader)) # failed
     for x in it:
         show_item(x)
         break
+    print(len(it))
 
 
 def main():
