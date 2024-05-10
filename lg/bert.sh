@@ -23,6 +23,7 @@ bert_flags() {
     echo --lr 0.0001
     # echo --train-iters 2000000
     echo --train-iters 100
+    # echo --train-iters 50
     echo --lr-decay-iters 990000
     echo --lr-decay-style linear
     echo --min-lr 0.00001
