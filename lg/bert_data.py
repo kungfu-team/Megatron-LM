@@ -2,7 +2,7 @@ import torch
 from megatron import arguments, get_args, initialize
 from megatron.data.dataset_utils import build_train_valid_test_datasets
 from megatron.initialize import initialize_megatron
-from megatron.training import build_train_valid_test_data_iterators
+from megatron.training import build_train_valid_test_data_loaders
 from pytrace import dprint as print
 from pytrace import traced
 from shadow import show_tensor
@@ -38,18 +38,17 @@ def show_item(x):
 
 
 @traced
-def show_ds(it: torch.utils.data.DataLoader):
+def show_ds(it: torch.utils.data.dataloader.DataLoader):
+    assert (isinstance(it, torch.utils.data.dataloader.DataLoader))
+    # print(it.__class__)
     print(len(it))
-    # print(it.__mro__)
-    assert (isinstance(
-        it, torch.utils.data.dataloader._MultiProcessingDataLoaderIter))
-    # assert (isinstance(it, torch.utils.data.DataLoader)) # failed
     for x in it:
         show_item(x)
         break
     print(len(it))
 
 
+@traced
 def main():
     initialize._compile_dependencies = noop
     arguments._print_args = noop
@@ -62,7 +61,9 @@ def main():
 
     args = get_args()
     args.iteration = 0
-    train_data_iterator, valid_data_iterator, test_data_iterator = build_train_valid_test_data_iterators(
+    print(args.dataloader_type)  # single
+
+    train_data_iterator, valid_data_iterator, test_data_iterator = build_train_valid_test_data_loaders(
         train_valid_test_datasets_provider)
 
     show_ds(train_data_iterator)
