@@ -6,7 +6,6 @@ cd $(dirname $0)
 . ./lg/measure.sh
 
 main() {
-
     if [ -f /.dockerenv ]; then
         measure ./lg/docker-main.sh
     else
@@ -16,6 +15,7 @@ main() {
         git add -A
         # exit
         if [ $(uname) = "Linux" ]; then
+            ./stop.sh
             measure ./shell ./x
         fi
         # ./Dockerfile

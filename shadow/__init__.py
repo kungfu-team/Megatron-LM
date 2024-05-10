@@ -5,8 +5,9 @@ def show_dtype(t: torch.dtype):
     names = {
         torch.float16: 'f16',
         torch.float32: 'f32',
+        torch.int64: 'i64',
     }
-    return names.get(t, '?')
+    return names.get(t, '?' + '(%s)' % (t))
 
 
 def shape_dims(s: torch.Size):
@@ -47,6 +48,7 @@ def scalar_size(t):
     sizes = {
         'f16': 2,
         'f32': 4,
+        'i64': 8,
     }
     return sizes[t]
 
