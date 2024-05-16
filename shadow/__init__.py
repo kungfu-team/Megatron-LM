@@ -57,10 +57,13 @@ def scalar_size(t):
 def stat_model(m: torch.nn.Module):
     by_type = dict()
     by_scalar = dict()
+    by_dims = dict()
     bs = 0
     nparams = 0
     for x in m.parameters():
         t, dims = show_dtype(x.dtype), shape_dims(x.shape)
+        for d in dims:
+            by_dims[d] = by_dims.get(d, 0) + 1
         k = '%s[%s]' % (t, show_dims(dims))
         by_type[k] = by_type.get(k, 0) + 1
 
@@ -76,6 +79,10 @@ def stat_model(m: torch.nn.Module):
     print('- scalars: ')
     for n, k in flip(by_scalar):
         print('  - {} x {:,}'.format(k, n))
+
+    print(' - dims:')
+    for n, d in flip(by_dims):
+        print('  - {} x {}'.format(d, n))
 
     # 302 params, 14 types, 2 fields, 678,116,872B
     print('{:,} params, {} types, {} fields, {:,}B'.format(
