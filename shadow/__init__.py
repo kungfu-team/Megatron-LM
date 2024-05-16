@@ -30,8 +30,9 @@ def show_parameter(p: torch.nn.parameter.Parameter):
 
 
 def show_model(m: torch.nn.Module):
+    print('- model:')
     for p in m.parameters():
-        print('%s' % (show_parameter(p)))
+        print('  - %s' % (show_parameter(p)))
 
 
 def prod(ns):
@@ -68,11 +69,14 @@ def stat_model(m: torch.nn.Module):
         bs += scalar_size(t) * n
         nparams += 1
 
+    print('- tensors: ')
     for n, k in flip(by_type):
-        print('{} x {:,}'.format(k, n))
+        print('  - {} x {:,}'.format(k, n))
 
+    print('- scalars: ')
     for n, k in flip(by_scalar):
-        print('{} x {:,}'.format(k, n))
+        print('  - {} x {:,}'.format(k, n))
 
-    # 302 params, 678,116,872B
-    print('{:,} params, {:,}B'.format(nparams, bs))
+    # 302 params, 14 types, 2 fields, 678,116,872B
+    print('{:,} params, {} types, {} fields, {:,}B'.format(
+        nparams, len(by_type), len(by_scalar), bs))
