@@ -7,12 +7,7 @@ import os
 import sys
 import time
 
-try:
-    import nltk
-    nltk_available = True
-except ImportError:
-    nltk_available = False
-
+import nltk
 from megatron.data import indexed_dataset
 from megatron.tokenizer import build_tokenizer
 
