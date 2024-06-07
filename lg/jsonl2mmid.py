@@ -178,89 +178,82 @@ class Partition(object):
 
 
 def get_args():
-    parser = argparse.ArgumentParser()
-    group = parser.add_argument_group(title='input data')
-    group.add_argument('--input',
-                       type=str,
-                       required=True,
-                       help='Path to input JSON')
-    group.add_argument(
-        '--json-keys',
-        nargs='+',
-        default=['text'],
-        help='space separate listed of keys to extract from json')
-    group.add_argument('--split-sentences',
-                       action='store_true',
-                       help='Split documents into sentences.')
-    group.add_argument('--keep-newlines',
-                       action='store_true',
-                       help='Keep newlines between sentences when splitting.')
+    p = argparse.ArgumentParser()
+    g = p.add_argument_group(title='input data')
+    g.add_argument('--input',
+                   type=str,
+                   required=True,
+                   help='Path to input JSON')
+    g.add_argument('--json-keys',
+                   nargs='+',
+                   default=['text'],
+                   help='space separate listed of keys to extract from json')
+    g.add_argument('--split-sentences',
+                   action='store_true',
+                   help='Split documents into sentences.')
+    g.add_argument('--keep-newlines',
+                   action='store_true',
+                   help='Keep newlines between sentences when splitting.')
 
-    group = parser.add_argument_group(title='tokenizer')
-    group.add_argument('--tokenizer-type',
-                       type=str,
-                       required=True,
-                       choices=[
-                           'BertWordPieceLowerCase', 'BertWordPieceCase',
-                           'GPT2BPETokenizer', 'SentencePieceTokenizer',
-                           'GPTSentencePieceTokenizer', 'NullTokenizer'
-                       ],
-                       help='What type of tokenizer to use.')
-    group.add_argument('--tokenizer-model',
-                       type=str,
-                       default=None,
-                       help='YTTM tokenizer model.')
-    group.add_argument('--vocab-file',
-                       type=str,
-                       default=None,
-                       help='Path to the vocab file')
-    group.add_argument('--vocab-size',
-                       default=786,
-                       help='size of vocab for use with NullTokenizer')
-    group.add_argument('--merge-file',
-                       type=str,
-                       default=None,
-                       help='Path to the BPE merge file (if necessary).')
-    group.add_argument('--append-eod',
-                       action='store_true',
-                       help='Append an <eod> token to the end of a document.')
-    group.add_argument(
-        '--lang',
-        type=str,
-        default='english',
-        help='Language to use for NLTK-powered sentence splitting.')
-    group = parser.add_argument_group(title='output data')
-    group.add_argument('--output-prefix',
-                       type=str,
-                       required=True,
-                       help='Path to binary output file without suffix')
-    group.add_argument('--dataset-impl',
-                       type=str,
-                       default='mmap',
-                       choices=['lazy', 'cached', 'mmap'])
+    g = p.add_argument_group(title='tokenizer')
+    g.add_argument('--tokenizer-type',
+                   type=str,
+                   required=True,
+                   choices=[
+                       'BertWordPieceLowerCase', 'BertWordPieceCase',
+                       'GPT2BPETokenizer', 'SentencePieceTokenizer',
+                       'GPTSentencePieceTokenizer', 'NullTokenizer'
+                   ],
+                   help='What type of tokenizer to use.')
+    g.add_argument('--tokenizer-model',
+                   type=str,
+                   default=None,
+                   help='YTTM tokenizer model.')
+    g.add_argument('--vocab-file',
+                   type=str,
+                   default=None,
+                   help='Path to the vocab file')
+    g.add_argument('--vocab-size',
+                   default=786,
+                   help='size of vocab for use with NullTokenizer')
+    g.add_argument('--merge-file',
+                   type=str,
+                   default=None,
+                   help='Path to the BPE merge file (if necessary).')
+    g.add_argument('--append-eod',
+                   action='store_true',
+                   help='Append an <eod> token to the end of a document.')
+    g.add_argument('--lang',
+                   type=str,
+                   default='english',
+                   help='Language to use for NLTK-powered sentence splitting.')
+    g = p.add_argument_group(title='output data')
+    g.add_argument('--output-prefix',
+                   type=str,
+                   required=True,
+                   help='Path to binary output file without suffix')
+    g.add_argument('--dataset-impl',
+                   type=str,
+                   default='mmap',
+                   choices=['lazy', 'cached', 'mmap'])
 
-    group = parser.add_argument_group(title='runtime')
-    group.add_argument(
-        '--workers',
-        type=int,
-        required=True,
-        help=('Number of worker processes to launch.'
-              'A good default for fast pre-processing '
-              'is: (workers * partitions) = available CPU cores.'))
-    group.add_argument('--partitions',
-                       type=int,
-                       default=1,
-                       help='Number of file partitions')
-    group.add_argument('--log-interval',
-                       type=int,
-                       default=1000,
-                       help='Interval between progress updates')
-    args = parser.parse_args()
+    g = p.add_argument_group(title='runtime')
+    g.add_argument('--workers',
+                   type=int,
+                   required=True,
+                   help=('Number of worker processes to launch.'
+                         'A good default for fast pre-processing '
+                         'is: (workers * partitions) = available CPU cores.'))
+    g.add_argument('--partitions',
+                   type=int,
+                   default=1,
+                   help='Number of file partitions')
+    g.add_argument('--log-interval',
+                   type=int,
+                   default=1000,
+                   help='Interval between progress updates')
+    args = p.parse_args()
     args.keep_empty = False
-
-    if args.tokenizer_type.lower().startswith(
-            'bert') and not args.split_sentences:
-        print("Are you sure you don't want to split sentences?")
 
     # some default/dummy values for the tokenizer
     args.rank = 1
