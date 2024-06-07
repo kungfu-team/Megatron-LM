@@ -10,7 +10,8 @@ export CUDA_DEVICE_MAX_CONNECTIONS=1
 
 CHECKPOINT_PATH=$HOME/var/ckpt/bert
 VOCAB_FILE=/data/megatron-lm/bert/bert-large-uncased-vocab.txt
-DATA_PATH=/data/megatron-lm/bert/enwiki/bert_text_sentence
+# DATA_PATH=/data/megatron-lm/bert/enwiki/bert_text_sentence
+DATA_PATH=/data/megatron-lm/gpt-2/enwiki/tiny_text_document
 
 bert_flags() {
     echo --num-layers 24

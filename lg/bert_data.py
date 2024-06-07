@@ -86,7 +86,7 @@ def show_bert_ds(ds: BertDataset):
 
 @traced
 def main():
-    initialize._compile_dependencies = noop
+    # initialize._compile_dependencies = noop
     arguments._print_args = noop
     initialize_megatron(
         extra_args_provider=None,

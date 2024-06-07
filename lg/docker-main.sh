@@ -5,6 +5,7 @@ cd $(dirname $0)
 
 . ./_x
 
-x ./bert.sh
+x ./jsonl2mmid.sh
+# x ./bert.sh
 
 echo "done $0"
