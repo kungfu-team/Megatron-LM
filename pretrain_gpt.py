@@ -2,19 +2,20 @@
 
 """Pretrain GPT"""
 
-import torch
+import hashlib
 from functools import partial
-from megatron import get_args
-from megatron import print_rank_0
-from megatron import get_timers
-from megatron import get_tokenizer
+
+import torch
+
+from megatron import get_args, get_timers, get_tokenizer, print_rank_0
 from megatron.core import tensor_parallel
 from megatron.core.enums import ModelType
 from megatron.data.gpt_dataset import build_train_valid_test_datasets
 from megatron.model import GPTModel
 from megatron.training import pretrain
-from megatron.utils import get_ltor_masks_and_position_ids
-from megatron.utils import average_losses_across_data_parallel_group
+from megatron.utils import (average_losses_across_data_parallel_group,
+                            get_ltor_masks_and_position_ids)
+
 
 def model_provider(pre_process=True, post_process=True):
     """Build the model."""
@@ -73,7 +74,6 @@ def loss_func(loss_mask, output_tensor):
 
 def forward_step(data_iterator, model):
     """Forward step."""
-    args = get_args()
     timers = get_timers()
 
     # Get the batch.
@@ -81,6 +81,14 @@ def forward_step(data_iterator, model):
     tokens, labels, loss_mask, attention_mask, position_ids = get_batch(
         data_iterator)
     timers('batch-generator').stop()
+
+    # debug
+    ha = hashlib.sha256()
+    ha.update(tokens.cpu().numpy().tobytes())
+    ha_str = str(ha.hexdigest())
+    rank = torch.distributed.get_rank()
+    with open(f"/data/ckpt/samples_{rank}.txt", "a", encoding="utf-8") as fi:
+        fi.write(ha_str + "\n")
 
     output_tensor = model(tokens, position_ids, attention_mask,
                           labels=labels)
