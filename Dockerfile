@@ -1,4 +1,4 @@
-#!/usr/bin/env -S sh -c 'docker build --rm -t kungfu.azurecr.io/mw-megatron-lm-23.06:latest -f $0 .'
+#!/usr/bin/env -S sh -c 'DOCKER_BUILDKIT=0 docker build --rm -t kungfu.azurecr.io/mw-megatron-lm-23.06:latest -f $0 .'
 FROM kungfu.azurecr.io/mw-pytorch2:latest
 
 WORKDIR /workspace
@@ -20,3 +20,5 @@ WORKDIR /workspace
 COPY . Megatron-LM
 WORKDIR /workspace/Megatron-LM
 RUN pip install --no-cache-dir .
+
+RUN python compile_kernels.py
