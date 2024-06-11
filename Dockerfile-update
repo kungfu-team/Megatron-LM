@@ -1,6 +1,6 @@
 #!/usr/bin/env -S sh -c 'docker build --rm -t kungfu.azurecr.io/mw-megatron-lm-23.06-update:latest -f $0 .'
 
-FROM kungfu.azurecr.io/mw-megatron-lm-23.06-kernels:latest
+FROM kungfu.azurecr.io/mw-megatron-lm-23.06-tenplex:latest
 
 # Megatron-LM
 WORKDIR /workspace
