@@ -355,6 +355,7 @@ def main():
                                                 'sentence_split',
                                                 args.partitions)
 
+    print(f'in_ss_out_names: {in_ss_out_names}')
     # split sentences in partition files
     if args.split_sentences and not split_sentences_present:
         processes = []
