@@ -1,3 +1,5 @@
+import hashlib
+
 import numpy as np
 import torch
 
@@ -19,6 +21,7 @@ def hash_samples():
     data_cache_path = None
     index = 0
     name = "train"
+    do_shuffle = False
 
     indexed_dataset = get_indexed_dataset_(data_prefix,
                                            data_impl,
@@ -35,18 +38,23 @@ def hash_samples():
                          seq_length, seed,
                          return_doc_ids,
                          data_cache_path=data_cache_path,
-                         do_shuffle=True)
+                         do_shuffle=False)
 
-    for sample in dataset:
-        print(sample)
-        break
+    with open("/data/out/samples.txt", "w", encoding="utf-8") as fi:
+        for i, sample in enumerate(dataset):
+            if i > 128:
+                break
+            ha = hashlib.sha256()
+            ha.update(sample["text"].tobytes())
+            ha_str = str(ha.hexdigest())
+            fi.write(ha_str + "\n")
 
 def main():
     torch.distributed.init_process_group()
     mpu.initialize_model_parallel(1, 1)
     compile_helper()
 
-    hash_dataset()
+    hash_samples()
 
 if __name__ == "__main__":
     main()
