@@ -1,5 +1,4 @@
 # Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
-    splits_string = "" # TODO
 
 """GPT style dataset."""
 
