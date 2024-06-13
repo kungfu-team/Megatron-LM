@@ -70,8 +70,8 @@ def save_npzs(ds, out_dir: str):
 
 def main():
     seq_length = 1024
-    # save_dir = "/data/datset/gpt-2/enwiki/npzs_seq{seq_length}"
-    save_dir = "/data/datset/gpt-2/enwiki/npzs_seq{seq_length}_new"
+    # save_dir = f"/data/dataset/gpt-2/enwiki/npzs_seq{seq_length}"
+    save_dir = f"/data/dataset/gpt-2/enwiki/npzs_seq{seq_length}_new"
 
     # init distribution
     torch.distributed.init_process_group()
