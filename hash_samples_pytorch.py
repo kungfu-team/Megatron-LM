@@ -6,7 +6,7 @@ from megatron.data.gpt_dataset import GPTDataset, get_indexed_dataset_
 
 def main():
     data_prefix = "/data/dataset/gpt-2/my-gpt2_text_document"
-    data_impl = "map"
+    data_impl = "mmap"
     splits_string = "949,50,1"
     train_valid_test_num_samples = [1280000, 0, 0]
     seq_length = 1024
