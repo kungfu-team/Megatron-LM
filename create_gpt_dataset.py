@@ -1,95 +1,50 @@
 import argparse
 import hashlib
 import io
-import os
 
 import numpy as np
 import torch
 
-from megatron import mpu
-from megatron.data.dataset_utils import compile_helper
-from megatron.data.gpt_dataset import build_train_valid_test_datasets
-from megatron.global_vars import _build_tokenizer
+from megatron.core import mpu
+from megatron.data.dataset_utils import (compile_helper,
+                                         get_train_valid_test_split_)
+from megatron.data.gpt_dataset import GPTDataset, get_indexed_dataset_
 
 
-def create_train_ds(prefix: str, train_val_test_num_samples, seq_length: int):
-    train_ds, valid_ds, test_ds = build_train_valid_test_datasets(
-        data_prefix=[prefix],
-        data_impl='infer',
-        splits_string='949,50,1',
-        train_valid_test_num_samples=train_val_test_num_samples,
-        seq_length=seq_length,
-        seed=1234,
-        skip_warmup=True)
+def create_dataset(seq_length: int):
+    data_prefix = "/data/dataset/gpt-2/my-gpt2_text_document"
+    data_impl = "mmap"
+    splits_string = "949,50,1"
+    train_valid_test_num_samples = [1280000, 0, 0] # args.train_iters * args.global_batch_size
+    seed = 1234
+    skip_warmup = True
+    return_doc_ids = False
+    data_cache_path = None
+    index = 0
+    name = "train"
+    do_shuffle = False
 
-    return train_ds
+    indexed_dataset = get_indexed_dataset_(data_prefix,
+                                           data_impl,
+                                           skip_warmup)
 
+    total_num_of_documents = indexed_dataset.sizes.shape[0]
+    splits = get_train_valid_test_split_(splits_string, total_num_of_documents)
 
-def hash_head(ds, num):
-    for i, sample in enumerate(ds):
-        b = sample['text'].tobytes()
-        h = hashlib.sha256(b).hexdigest()
-        print(f'{i:02d}: {h}')
+    documents = np.arange(start=splits[index], stop=splits[index + 1],
+                          step=1, dtype=np.int32)
+    dataset = GPTDataset(name, data_prefix, documents, indexed_dataset,
+                         splits_string,
+                         train_valid_test_num_samples[index],
+                         seq_length, seed,
+                         return_doc_ids,
+                         data_cache_path=data_cache_path,
+                         do_shuffle=do_shuffle)
+    return dataset
 
-        if i >= num:
-            break
-
-
-def load_samples(ds, num):
-    for i, sample in enumerate(ds):
-        if i >= num:
-            break
-
-
-#  train_sample = {
-#      'text': tokens_np,
-#      'types': tokentypes_np,
-#      'labels': labels_np,
-#      'is_random': int(is_next_random),
-#      'loss_mask': loss_mask_np,
-#      'padding_mask': padding_mask_np,
-#      'truncated': int(truncated)}
-def save_batches(ds, num_samples=16384):
-    samples = []
-    shard_num = 0
-    for i, sample in enumerate(ds):
-        if i > 0 and i % num_samples == 0:
-            # save
-            text = np.concatenate([[x['text']] for x in samples])
-            types = np.concatenate([[x['types']] for x in samples])
-            labels = np.concatenate([[x['labels']] for x in samples])
-            is_random = np.concatenate([[x['is_random']] for x in samples])
-            loss_mask = np.concatenate([[x['loss_mask']] for x in samples])
-            padding_mask = np.concatenate([[x['padding_mask']]
-                                           for x in samples])
-            truncated = np.concatenate([[x['truncated']] for x in samples])
-
-            print(f'save shard {shard_num}')
-
-            path = '/data/megatron-lm/bert/large_1024'
-            path = os.path.join(path, f'samples_{shard_num:09d}.npz')
-            np.savez(path,
-                     text=text,
-                     types=types,
-                     labels=labels,
-                     is_random=is_random,
-                     loss_mask=loss_mask,
-                     padding_mask=padding_mask,
-                     truncated=truncated)
-
-            shard_num = shard_num + 1
-            samples = []
-
-        samples.append(sample)
 
 
 def save_npzs(ds, out_dir: str):
-    #  for _, sample in enumerate(ds):
-    #      s = sample['text']
-    #      print(f'sample text type {type(s)}')
-    #      print(f'sample text dtype {s.dtype}')
-    #      return
-
     npzs_file = open(f'{out_dir}/samples.npzs', 'wb')
     indices_file = open(f'{out_dir}/indices.txt', 'wt')
 
@@ -114,50 +69,19 @@ def save_npzs(ds, out_dir: str):
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--seq-length', type=int)
-    parser.add_argument('--tokenizer-type',
-                        type=str,
-                        default='GPT2BPETokenizer')
-    parser.add_argument('--rank', type=int, default=0)
-    parser.add_argument('--vocab-file',
-                        type=str,
-                        default='/data/megatron-lm/gpt-2/gpt2-vocab.json')
-    parser.add_argument('--merge-file',
-                        type=str,
-                        default='/data/megatron-lm/gpt-2/gpt2-merges.txt')
-    parser.add_argument('--vocab-extra-ids', type=int, default=0)
-    parser.add_argument('--make-vocab-size-divisible-by',
-                        type=int,
-                        default=128)
-    parser.add_argument('--tensor-model-parallel-size', type=int, default=1)
-    args = parser.parse_args()
+    seq_length = 1024
+    # save_dir = "/data/datset/gpt-2/enwiki/npzs_seq{seq_length}"
+    save_dir = "/data/datset/gpt-2/enwiki/npzs_seq{seq_length}_new"
 
-    batch_size = 32
-    eval_iters = 10
-    train_iters = 4000
-    seq_length = args.seq_length
+    # init distribution
+    torch.distributed.init_process_group()
+    mpu.initialize_model_parallel(1, 1)
 
-    train_samples = train_iters * batch_size
-    train_val_test_num_samples = [
-        train_samples, eval_iters * batch_size, eval_iters * batch_size
-    ]
-
-    # init distribute
-    torch.distributed.init_process_group('nccl')
-    mpu.initialize_model_parallel(1, 1, 1, 0)
-
+    # compile dataset helper
     compile_helper()
 
-    _build_tokenizer(args)
-
-    prefix = '/data/megatron-lm/gpt-2/enwiki/data_text_document'
-    print('start creating training dataset')
-    full_train_ds = create_train_ds(prefix, train_val_test_num_samples,
-                                    seq_length)
-    print('finished creating training dataset')
-    save_dir = f'/data/megatron-lm/gpt-2/enwiki/npzs_seq{seq_length}'
-    save_npzs(full_train_ds, save_dir)
+    ds = create_dataset(seq_length)
+    save_npzs(ds, save_dir)
 
 
 if __name__ == '__main__':

@@ -114,28 +114,12 @@ def build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
         return (train_dataset, valid_dataset, test_dataset)
 
 
-# debug
-def printval(var):
-    print(f"{var=}")
-
-
 def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
                                      train_valid_test_num_samples,
                                      seq_length, seed, skip_warmup,
                                      return_doc_ids=False, *,
                                      data_cache_path=None):
     """Build train, valid, and test datasets."""
-
-    # debug
-    printval(data_prefix)
-    printval(data_impl)
-    printval(splits_string)
-    printval(train_valid_test_num_samples)
-    printval(seq_length)
-    printval(seed)
-    printval(skip_warmup)
-    printval(return_doc_ids)
-    printval(data_cache_path)
 
     # Tenplex
     args = get_args()
@@ -175,8 +159,7 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
                                  seq_length, seed,
                                  return_doc_ids,
                                  data_cache_path=data_cache_path,
-                                 # do_shuffle=True)
-                                 do_shuffle=False) # debug
+                                 do_shuffle=False)
         return dataset
 
     train_dataset = build_dataset(0, 'train')

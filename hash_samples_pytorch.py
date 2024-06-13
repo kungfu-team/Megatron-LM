@@ -38,7 +38,7 @@ def hash_samples():
                          seq_length, seed,
                          return_doc_ids,
                          data_cache_path=data_cache_path,
-                         do_shuffle=False)
+                         do_shuffle=do_shuffle)
 
     with open("/data/out/samples.txt", "w", encoding="utf-8") as fi:
         for i, sample in enumerate(dataset):
