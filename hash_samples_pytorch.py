@@ -1,10 +1,13 @@
 import numpy as np
+import torch
 
-from megatron.data.dataset_utils import get_train_valid_test_split_
+from megatron.core import mpu
+from megatron.data.dataset_utils import (compile_helper,
+                                         get_train_valid_test_split_)
 from megatron.data.gpt_dataset import GPTDataset, get_indexed_dataset_
 
 
-def main():
+def hash_samples():
     data_prefix = "/data/dataset/gpt-2/my-gpt2_text_document"
     data_impl = "mmap"
     splits_string = "949,50,1"
@@ -37,6 +40,13 @@ def main():
     for sample in dataset:
         print(sample)
         break
+
+def main():
+    torch.distributed.init_process_group()
+    mpu.initialize_model_parallel(1, 1)
+    compile_helper()
+
+    hash_dataset()
 
 if __name__ == "__main__":
     main()
