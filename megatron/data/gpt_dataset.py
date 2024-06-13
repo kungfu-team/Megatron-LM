@@ -1,4 +1,5 @@
 # Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+    splits_string = "" # TODO
 
 """GPT style dataset."""
 
@@ -8,14 +9,14 @@ import time
 
 import numpy as np
 import torch
+from tenplex.dataset import GPTDataset as TenplexGPTDataset
 
-from megatron import print_rank_0, get_args
+from megatron import get_args, print_rank_0
 from megatron.core import mpu
 from megatron.data.blendable_dataset import BlendableDataset
-from megatron.data.dataset_utils import get_datasets_weights_and_num_samples
-from megatron.data.dataset_utils import get_train_valid_test_split_
+from megatron.data.dataset_utils import (get_datasets_weights_and_num_samples,
+                                         get_train_valid_test_split_)
 from megatron.data.indexed_dataset import make_dataset as make_indexed_dataset
-from tenplex.dataset import GPTDataset as TenplexGPTDataset
 
 
 def build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
@@ -114,12 +115,28 @@ def build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
         return (train_dataset, valid_dataset, test_dataset)
 
 
+# debug
+def printval(var):
+    print(f"{var=}")
+
+
 def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
                                      train_valid_test_num_samples,
                                      seq_length, seed, skip_warmup,
                                      return_doc_ids=False, *,
                                      data_cache_path=None):
     """Build train, valid, and test datasets."""
+
+    # debug
+    printval(data_prefix)
+    printval(data_impl)
+    printval(splits_string)
+    printval(train_valid_test_num_samples)
+    printval(seq_length)
+    printval(seed)
+    printval(skip_warmup)
+    printval(return_doc_ids)
+    printval(data_cache_path)
 
     # Tenplex
     args = get_args()
@@ -159,7 +176,8 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
                                  seq_length, seed,
                                  return_doc_ids,
                                  data_cache_path=data_cache_path,
-                                 do_shuffle=True)
+                                 # do_shuffle=True)
+                                 do_shuffle=False) # debug
         return dataset
 
     train_dataset = build_dataset(0, 'train')
