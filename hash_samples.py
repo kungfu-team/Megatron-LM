@@ -2,6 +2,7 @@ import hashlib
 
 import numpy as np
 import torch
+from tenplex.dataset import GPTDataset as TenplexGPTDataset
 
 from megatron.core import mpu
 from megatron.data.dataset_utils import (compile_helper,
@@ -9,7 +10,7 @@ from megatron.data.dataset_utils import (compile_helper,
 from megatron.data.gpt_dataset import GPTDataset, get_indexed_dataset_
 
 
-def hash_samples():
+def pytorch_dataset():
     data_prefix = "/data/dataset/gpt-2/my-gpt2_text_document"
     data_impl = "mmap"
     splits_string = "949,50,1"
@@ -39,22 +40,51 @@ def hash_samples():
                          return_doc_ids,
                          data_cache_path=data_cache_path,
                          do_shuffle=do_shuffle)
+    return dataset
 
-    with open("/data/out/samples.txt", "w", encoding="utf-8") as fi:
+
+def hash_dataset(dataset, file_name: str):
+    with open(file_name, "w", encoding="utf-8") as fi:
         for i, sample in enumerate(dataset):
-            if i > 128:
+            if i > 1024:
                 break
             ha = hashlib.sha256()
             ha.update(sample["text"].tobytes())
             ha_str = str(ha.hexdigest())
             fi.write(ha_str + "\n")
 
-def main():
+
+def tenplex_dataset():
+    mlfs_path = "/data/mlfs"
+    jobid = "tenplex-samples"
+    dp_rank = 0
+
+    dataset = TenplexGPTDataset(mlfs_path, jobid, dp_rank)
+    return dataset
+
+
+def hash_pytorch():
+    dataset = pytorch_dataset()
+    hash_dataset(dataset, "/data/out/samples_pytorch.txt")
+
+
+def hash_tenplex():
+    dataset = tenplex_dataset()
+    hash_dataset(dataset, "/data/out/samples_tenplex.txt")
+
+
+def init():
     torch.distributed.init_process_group()
     mpu.initialize_model_parallel(1, 1)
     compile_helper()
 
-    hash_samples()
+
+def main():
+    init()
+
+    hash_pytorch()
+    hash_tenplex()
+
 
 if __name__ == "__main__":
     main()
