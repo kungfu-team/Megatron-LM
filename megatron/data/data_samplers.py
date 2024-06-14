@@ -4,9 +4,11 @@
 
 
 import random
-import torch
+
 import numpy as np
+import torch
 from torch.utils.data import Dataset
+
 from megatron import get_args
 from megatron.core import mpu
 
@@ -17,9 +19,6 @@ def build_pretraining_data_loader(dataset, consumed_samples):
     if dataset is None:
         return None
     args = get_args()
-
-    # Marcel
-    print(f"data loader type {args.dataloader_type}")
 
     # Megatron sampler
     if args.dataloader_type == 'single':
