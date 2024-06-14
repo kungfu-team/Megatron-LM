@@ -1,9 +1,8 @@
-import argparse
 import hashlib
-import io
 
 import numpy as np
 import torch
+from tenplex.dataset import GPTDataset as TenplexGPTDataset
 
 from megatron.core import mpu
 from megatron.data.dataset_utils import (compile_helper,
@@ -11,11 +10,12 @@ from megatron.data.dataset_utils import (compile_helper,
 from megatron.data.gpt_dataset import GPTDataset, get_indexed_dataset_
 
 
-def create_dataset(seq_length: int):
+def pytorch_dataset():
     data_prefix = "/data/dataset/gpt-2/my-gpt2_text_document"
     data_impl = "mmap"
     splits_string = "949,50,1"
-    train_valid_test_num_samples = [1280000, 0, 0] # args.train_iters * args.global_batch_size
+    train_valid_test_num_samples = [1280000, 0, 0]
+    seq_length = 1024
     seed = 1234
     skip_warmup = True
     return_doc_ids = False
@@ -43,46 +43,48 @@ def create_dataset(seq_length: int):
     return dataset
 
 
+def hash_dataset(dataset, file_name: str):
+    with open(file_name, "w", encoding="utf-8") as fi:
+        for i, sample in enumerate(dataset):
+            if i > 1024:
+                break
+            ha = hashlib.sha256()
+            ha.update(sample["text"].tobytes())
+            ha_str = str(ha.hexdigest())
+            fi.write(ha_str + "\n")
 
-def save_npzs(ds, out_dir: str):
-    npzs_file = open(f'{out_dir}/samples.npzs', 'wb')
-    indices_file = open(f'{out_dir}/indices.txt', 'wt')
 
-    indices_file.write('1\n')
-    indices_file.write('/path/to/bin NUMBEROFSAMPES\n')
+def tenplex_dataset():
+    mlfs_path = "/data/mlfs"
+    jobid = "tenplex-samples"
+    dp_rank = 0
 
-    current_offset = 0
-    for _, sample in enumerate(ds):
-        buff = io.BytesIO()
-        np.savez(buff, text=sample['text'])
+    dataset = TenplexGPTDataset(mlfs_path, jobid, dp_rank)
+    return dataset
 
-        val = buff.getvalue()
-        npzs_file.write(val)
-        new_offset = current_offset + len(val)
-        indices_file.write(f'{current_offset} {new_offset}\n')
-        current_offset = new_offset
 
-        buff.close()
+def hash_pytorch():
+    dataset = pytorch_dataset()
+    hash_dataset(dataset, "/data/out/samples_pytorch.txt")
 
-    npzs_file.close()
-    indices_file.close()
+
+def hash_tenplex():
+    dataset = tenplex_dataset()
+    hash_dataset(dataset, "/data/out/samples_tenplex.txt")
+
+
+def init():
+    torch.distributed.init_process_group()
+    mpu.initialize_model_parallel(1, 1)
+    compile_helper()
 
 
 def main():
-    seq_length = 1024
-    # save_dir = f"/data/dataset/gpt-2/enwiki/npzs_seq{seq_length}"
-    save_dir = f"/data/dataset/gpt-2/enwiki/npzs_seq{seq_length}_new"
+    init()
 
-    # init distribution
-    torch.distributed.init_process_group()
-    mpu.initialize_model_parallel(1, 1)
-
-    # compile dataset helper
-    compile_helper()
-
-    ds = create_dataset(seq_length)
-    save_npzs(ds, save_dir)
+    hash_pytorch()
+    hash_tenplex()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

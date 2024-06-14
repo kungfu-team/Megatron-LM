@@ -8,14 +8,14 @@ import time
 
 import numpy as np
 import torch
+from tenplex.dataset import GPTDataset as TenplexGPTDataset
 
-from megatron import print_rank_0, get_args
+from megatron import get_args, print_rank_0
 from megatron.core import mpu
 from megatron.data.blendable_dataset import BlendableDataset
-from megatron.data.dataset_utils import get_datasets_weights_and_num_samples
-from megatron.data.dataset_utils import get_train_valid_test_split_
+from megatron.data.dataset_utils import (get_datasets_weights_and_num_samples,
+                                         get_train_valid_test_split_)
 from megatron.data.indexed_dataset import make_dataset as make_indexed_dataset
-from tenplex.dataset import GPTDataset as TenplexGPTDataset
 
 
 def build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
@@ -159,7 +159,7 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
                                  seq_length, seed,
                                  return_doc_ids,
                                  data_cache_path=data_cache_path,
-                                 do_shuffle=True)
+                                 do_shuffle=False)
         return dataset
 
     train_dataset = build_dataset(0, 'train')
