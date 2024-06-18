@@ -1,0 +1,45 @@
+#!/bin/sh
+
+set -e
+
+join_() {
+    local IFS=$1
+    shift
+    echo "$*"
+}
+
+join() { join_ , $@; }
+
+gpus() {
+    echo 0
+    # echo 1
+}
+
+docker_run_flags() {
+    echo --rm
+    echo --gpus
+    echo "\"device=$(join $(gpus))\""
+    echo -i
+
+    local name=$USER-debug-mlm
+    echo --name $name
+
+    #echo -v /data:/data
+    #echo -v $PWD/log:/log
+
+    echo -v /mnt/mlfs:/data/mlfs
+    echo -v ./out:/data/out
+    echo -v /data/megatron-lm:/data/dataset
+}
+
+docker_run() { docker run $(docker_run_flags) -t $(cat tag.txt) $@; }
+
+main() {
+    if [ -z "$1" ]; then
+        docker_run bash
+    else
+        docker_run $@
+    fi
+}
+
+main $@

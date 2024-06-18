@@ -1,3 +1,4 @@
+#!/usr/bin/env torchrun
 import hashlib
 
 import numpy as np
