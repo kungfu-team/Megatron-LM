@@ -116,28 +116,28 @@ def tenplex_dataset():
 
 def hash_pytorch():
     dataset = pytorch_dataset()
-    hash_dataset(dataset, "/data/out/samples_pytorch.txt")
-    # hash_batches(dataset, "/data/out/tokens_pytorch.txt")
+    # hash_dataset(dataset, "/data/out/samples_pytorch.txt")
+    hash_batches(dataset, "/data/out/tokens_pytorch.txt")
 
 
 def hash_tenplex():
     dataset = tenplex_dataset()
-    hash_dataset(dataset, "/data/out/samples_tenplex.txt")
-    # hash_batches(dataset, "/data/out/tokens_tenplex.txt")
+    # hash_dataset(dataset, "/data/out/samples_tenplex.txt")
+    hash_batches(dataset, "/data/out/tokens_tenplex.txt")
 
 
 def init():
     # arguments._print_args = noop
-    # initialize_megatron(
-    #     extra_args_provider=None,
-    #     args_defaults={
-    #         'tokenizer_type': 'GPT2BPETokenizer',
-    #     },
-    # )
+    initialize_megatron(
+        extra_args_provider=None,
+        args_defaults={
+            'tokenizer_type': 'GPT2BPETokenizer',
+        },
+    )
 
     # torch.distributed.init_process_group()
-    mpu.initialize_model_parallel(1, 1)
-    compile_helper()
+    # mpu.initialize_model_parallel(1, 1) # data parallel group is already initialized
+    # compile_helper()
 
 
 def main():
