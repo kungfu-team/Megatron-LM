@@ -15,3 +15,4 @@ py_fix() {
 }
 
 py_fix ./hash_samples.py
+py_fix ./lg/*.py
