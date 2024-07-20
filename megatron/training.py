@@ -774,7 +774,7 @@ def train(
     timers("interval-time", log_level=0).start(barrier=True)
     print_datetime("before the start of training step")
     report_memory_flag = True
-    while iteration < args.tenplex_train_iters:  # debug
+    while iteration < args.tenplex_train_iters:
         if tenplex.check_stop(args.scheduler_addr):
             break
 

@@ -40,7 +40,7 @@ def parse_args(extra_args_provider=None, ignore_unknown_args=False):
     parser = _add_retro_args(parser)
     parser = tenplex.arguments.add_tenplex_args(parser)
 
-    # debug
+    # Add additional iteration counter for scaling
     parser.add_argument("--tenplex-train-iters", type=int, default=None)
 
     # Custom arguments.
