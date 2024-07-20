@@ -1,4 +1,4 @@
-#!/usr/bin/env -S sh -c 'docker build --rm -t kungfu.azurecr.io/mw-megatron-lm-23.06-debug:latest -f $0 .'
+#!/usr/bin/env -S sh -c 'docker build --rm -t kungfu.azurecr.io/mw-megatron-lm-23.06-update:latest -f $0 .'
 
 FROM kungfu.azurecr.io/mw-megatron-lm-23.06-tenplex:latest
 
