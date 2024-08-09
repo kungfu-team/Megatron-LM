@@ -254,8 +254,13 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
     # Collect rng state across data parallel ranks.
     rng_state = get_rng_state()
 
+    ckpt_path = args.save
+    if args.gen_para_config:
+        rank = torch.distributed.get_rank()
+        ckpt_path = os.path.join(ckpt_path, str(rank))
+
     # Checkpoint name.
-    checkpoint_name = get_checkpoint_name(args.save, iteration)
+    checkpoint_name = get_checkpoint_name(ckpt_path, iteration)
 
     # Save distributed optimizer's custom parameter state.
     if args.use_distributed_optimizer:
