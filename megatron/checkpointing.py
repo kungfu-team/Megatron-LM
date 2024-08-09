@@ -319,6 +319,13 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
         with open(tracker_filename, "w") as f:
             f.write(str(iteration))
 
+    if args.gen_para_config:
+        rank = torch.distributed.get_rank()
+        dp_rank = mpu.get_data_parallel_rank()
+        tp_rank = mpu.get_tensor_model_parallel_rank()
+        pp_rank = mpu.get_pipeline_model_parallel_rank()
+        print(f"rank {rank} is DP={dp_rank}, TP={tp_rank}, PP={pp_rank}")
+
     # Wait so everyone is done (not necessary)
     if torch.distributed.is_initialized():
         torch.distributed.barrier()
