@@ -292,7 +292,7 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
             state_dict["rng_state"] = rng_state
 
         # Save.
-        if args.tenplex:
+        if args.tenplex and not args.gen_para_config:
             device_rank = torch.distributed.get_rank()
             jobid = args.jobid
             mlfs_path = args.mlfs_path
