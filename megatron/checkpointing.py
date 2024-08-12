@@ -325,11 +325,19 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
             f.write(str(iteration))
 
     if args.gen_para_config:
+        import json
+
         rank = torch.distributed.get_rank()
         dp_rank = mpu.get_data_parallel_rank()
         tp_rank = mpu.get_tensor_model_parallel_rank()
         pp_rank = mpu.get_pipeline_model_parallel_rank()
-        print(f"rank {rank} is DP={dp_rank}, TP={tp_rank}, PP={pp_rank}")
+        rank_map = {"dp": dp_rank, "tp": tp_rank, "pp": pp_rank}
+        if not os.path.exists(ckpt_path):
+            os.mkdir(ckpt_path)
+        with open(
+            os.path.join(ckpt_path, f"rank_{rank:02d}.json"), "w", encoding="utf-8"
+        ) as rank_file:
+            json.dump(rank_map, rank_file)
 
     # Wait so everyone is done (not necessary)
     if torch.distributed.is_initialized():
