@@ -254,8 +254,13 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
     # Collect rng state across data parallel ranks.
     rng_state = get_rng_state()
 
+    ckpt_path = args.save
+    if args.gen_para_config:
+        rank = torch.distributed.get_rank()
+        ckpt_path = os.path.join(ckpt_path, str(rank))
+
     # Checkpoint name.
-    checkpoint_name = get_checkpoint_name(args.save, iteration)
+    checkpoint_name = get_checkpoint_name(ckpt_path, iteration)
 
     # Save distributed optimizer's custom parameter state.
     if args.use_distributed_optimizer:
@@ -318,6 +323,13 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
         tracker_filename = get_checkpoint_tracker_filename(args.save)
         with open(tracker_filename, "w") as f:
             f.write(str(iteration))
+
+    if args.gen_para_config:
+        rank = torch.distributed.get_rank()
+        dp_rank = mpu.get_data_parallel_rank()
+        tp_rank = mpu.get_tensor_model_parallel_rank()
+        pp_rank = mpu.get_pipeline_model_parallel_rank()
+        print(f"rank {rank} is DP={dp_rank}, TP={tp_rank}, PP={pp_rank}")
 
     # Wait so everyone is done (not necessary)
     if torch.distributed.is_initialized():
