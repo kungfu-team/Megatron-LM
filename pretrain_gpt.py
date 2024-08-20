@@ -2,6 +2,7 @@
 
 """Pretrain GPT"""
 
+import time
 import torch
 from functools import partial
 from megatron import get_args
@@ -112,9 +113,10 @@ def train_valid_test_datasets_provider(train_val_test_num_samples):
 
 
 if __name__ == "__main__":
-
+    print(f"Start pretrain {time.time()}")
     pretrain(train_valid_test_datasets_provider,
              model_provider,
              ModelType.encoder_or_decoder,
              forward_step,
              args_defaults={'tokenizer_type': 'GPT2BPETokenizer'})
+    print(f"Finished pretrain {time.time()}")
