@@ -773,6 +773,7 @@ def train(
 
     timers("interval-time", log_level=0).start(barrier=True)
     print_datetime("before the start of training step")
+    print(f"Start training loop at {time.time()}")
     report_memory_flag = True
     while iteration < args.tenplex_train_iters:
         if tenplex.check_stop(args.scheduler_addr):
@@ -869,6 +870,8 @@ def train(
             torch.distributed.barrier()
             print_datetime("exiting program at iteration {}".format(iteration))
             sys.exit()
+
+    print(f"Exit training loop at {time.time()}")
 
     return iteration
 
