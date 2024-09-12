@@ -121,13 +121,6 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
                                      data_cache_path=None):
     """Build train, valid, and test datasets."""
 
-    # Tenplex
-    args = get_args()
-    if args.tenplex:
-        dp_rank = mpu.get_data_parallel_rank()
-        dataset = TenplexGPTDataset(args.mlfs_path, args.jobid, dp_rank)
-        return dataset, None, None
-
     # Indexed dataset.
     indexed_dataset = get_indexed_dataset_(data_prefix,
                                            data_impl,
@@ -150,6 +143,13 @@ def _build_train_valid_test_datasets(data_prefix, data_impl, splits_string,
 
     def build_dataset(index, name):
         dataset = None
+
+        # Tenplex
+        args = get_args()
+        if args.tenplex and name == "train":
+            dp_rank = mpu.get_data_parallel_rank()
+            return TenplexGPTDataset(args.mlfs_path, args.jobid, dp_rank)
+
         if splits[index + 1] > splits[index]:
             documents = np.arange(start=splits[index], stop=splits[index + 1],
                                   step=1, dtype=np.int32)
